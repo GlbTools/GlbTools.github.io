@@ -36,7 +36,12 @@ function showNotification(message, isError = false) {
     }, 5000);
 }
 
+function normalizeRepoName(name) {
+    return name.trim().replace(/\s+/g, '-'); // Replace all spaces with hyphens
+}
+
 async function forkRepo(newName) {
+    const normalizedName = normalizeRepoName(newName);
     try {
         forkStatus.textContent = 'Forking...';
         forkStatus.className = 'pending';
@@ -46,12 +51,12 @@ async function forkRepo(newName) {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: newName })
+            body: JSON.stringify({ name: normalizedName })
         });
         if (!response.ok) throw new Error('Failed to start fork');
         showNotification('Fork started! Waiting for it to complete...');
-        forkedRepoName = newName;
-        checkForkStatus(newName);
+        forkedRepoName = normalizedName;
+        checkForkStatus(normalizedName);
     } catch (error) {
         forkStatus.textContent = `Error: ${error.message}`;
         forkStatus.className = 'error';
@@ -112,6 +117,7 @@ function enableNextSteps() {
 }
 
 async function createGlbRepo(repoName) {
+    const normalizedName = normalizeRepoName(repoName);
     try {
         glbRepoStatus.textContent = 'Creating...';
         glbRepoStatus.className = 'pending';
@@ -121,13 +127,13 @@ async function createGlbRepo(repoName) {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: repoName, private: false })
+            body: JSON.stringify({ name: normalizedName, private: false })
         });
         if (!response.ok) throw new Error('Failed to create GLB repo');
         glbRepoStatus.textContent = 'Repo Created';
         glbRepoStatus.className = 'complete';
-        glbRepoName = repoName;
-        showNotification(`GLB repo ${repoName} created!`);
+        glbRepoName = normalizedName;
+        showNotification(`GLB repo ${normalizedName} created!`);
         enableStep4();
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
@@ -139,7 +145,7 @@ async function createGlbRepo(repoName) {
 async function populateStep5() {
     siteRepoOwnerInput.value = username;
     siteRepoNameInput.value = forkedRepoName;
-    siteTitleInput.value = forkedRepoName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    siteTitleInput.value = forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); // e.g., "rock-kit" → "Rock Kit"
 }
 
 async function saveConfig() {
@@ -148,7 +154,7 @@ async function saveConfig() {
         glbRepoName: glbRepoName,
         supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
         supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
-        siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value,
+        siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
         siteRepoName: forkedRepoName
