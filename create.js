@@ -37,7 +37,7 @@ function showNotification(message, isError = false) {
 }
 
 function normalizeRepoName(name) {
-    return name.trim().replace(/\s+/g, '-'); // Replace all spaces with hyphens
+    return name.trim().replace(/\s+/g, '-');
 }
 
 async function forkRepo(newName) {
@@ -145,7 +145,7 @@ async function createGlbRepo(repoName) {
 async function populateStep5() {
     siteRepoOwnerInput.value = username;
     siteRepoNameInput.value = forkedRepoName;
-    siteTitleInput.value = forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); // e.g., "rock-kit" → "Rock Kit"
+    siteTitleInput.value = forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 async function saveConfig() {
@@ -258,13 +258,15 @@ function setupDragAndDrop(input, dropZone) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    auth.checkSession(async (user) => {
+document.addEventListener('DOMContentLoaded', async () => {
+    forkRepoBtn.disabled = true; // Disable until logged in
+    await auth.checkSession(async (user) => {
         if (user && auth.getToken()) {
             username = user.login;
             auth.updateLoginDisplay(user, loginBtn);
             createSection.style.display = 'block';
             loginMessage.style.display = 'none';
+            forkRepoBtn.disabled = false; // Enable once username is set
         } else {
             loginBtn.innerHTML = 'Login with GitHub';
             loginBtn.classList.remove('profile');
@@ -293,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdownVisible = false;
         createSection.style.display = 'none';
         loginMessage.style.display = 'block';
+        forkRepoBtn.disabled = true;
     });
 
     document.addEventListener('click', (e) => {
@@ -306,6 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const repoName = repoNameInput.value.trim();
         if (!repoName) {
             showNotification('Please enter a repo name.', true);
+            return;
+        }
+        if (!username) {
+            showNotification('Please log in first.', true);
             return;
         }
         forkRepo(repoName);
