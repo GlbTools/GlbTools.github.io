@@ -263,10 +263,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     await auth.checkSession(async (user) => {
         if (user && auth.getToken()) {
             username = user.login;
+            console.log('Username set to:', username); // Debug log
             auth.updateLoginDisplay(user, loginBtn);
             createSection.style.display = 'block';
             loginMessage.style.display = 'none';
-            forkRepoBtn.disabled = false; // Enable once username is set
+            forkRepoBtn.disabled = false;
+
+            // Move listener inside callback to ensure username is set
+            forkRepoBtn.addEventListener('click', () => {
+                const repoName = repoNameInput.value.trim();
+                if (!repoName) {
+                    showNotification('Please enter a repo name.', true);
+                    return;
+                }
+                forkRepo(repoName);
+            });
         } else {
             loginBtn.innerHTML = 'Login with GitHub';
             loginBtn.classList.remove('profile');
@@ -303,19 +314,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             profileDropdown.style.display = 'none';
             dropdownVisible = false;
         }
-    });
-
-    forkRepoBtn.addEventListener('click', () => {
-        const repoName = repoNameInput.value.trim();
-        if (!repoName) {
-            showNotification('Please enter a repo name.', true);
-            return;
-        }
-        if (!username) {
-            showNotification('Please log in first.', true);
-            return;
-        }
-        forkRepo(repoName);
     });
 
     createGlbRepoBtn.addEventListener('click', () => {
