@@ -1127,3 +1127,29 @@ footer a:hover {
 #create-repo-btn:hover {
     background: #e65a50;
 }
+
+#fork-repo-btn {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Bungee', cursive;
+}
+
+#fork-repo-btn:hover {
+    background: #e65a50;
+}
+
+#fork-status.pending {
+    color: #ff6f61; /* Orange for in-progress */
+}
+
+#fork-status.complete {
+    color: #44ff44; /* Green for complete */
+}
+
+#fork-status.error {
+    color: #ff4444; /* Red for error */
+}

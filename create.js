@@ -5,9 +5,11 @@ const profileDropdown = document.getElementById('profile-dropdown');
 const logoutBtn = document.getElementById('logout-btn');
 const loginMessage = document.getElementById('login-message');
 const createSection = document.getElementById('create-section');
-const createRepoBtn = document.getElementById('create-repo-btn');
+const forkRepoBtn = document.getElementById('fork-repo-btn');
 const repoNameInput = document.getElementById('repo-name');
+const forkStatus = document.getElementById('fork-status');
 let dropdownVisible = false;
+let forkedRepoName = null;
 
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');
@@ -23,21 +25,68 @@ function showNotification(message, isError = false) {
     }, 5000);
 }
 
-async function createRepo(repoName) {
+async function forkRepo(newName) {
     try {
-        const response = await fetch('https://api.github.com/user/repos', {
+        forkStatus.textContent = 'Forking...';
+        forkStatus.className = 'pending';
+        const response = await fetch('https://api.github.com/repos/beb-cc0/beb-cc0.github.io/forks', {
             method: 'POST',
-            headers: { 
-                'Authorization': `token ${auth.getToken()}`, 
-                'Content-Type': 'application/json' 
+            headers: {
+                'Authorization': `token ${auth.getToken()}`,
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: repoName, private: false })
+            body: JSON.stringify({ name: newName })
         });
-        if (!response.ok) throw new Error('Failed to create repo');
-        showNotification(`Repository ${repoName} created! Now fork Clone.Tools into it manually.`);
+        if (!response.ok) throw new Error('Failed to start fork');
+        showNotification('Fork started! Waiting for it to complete...');
+        forkedRepoName = newName;
+        checkForkStatus(newName); // Start polling
     } catch (error) {
-        showNotification(`Error creating repo: ${error.message}`, true);
+        forkStatus.textContent = `Error: ${error.message}`;
+        forkStatus.className = 'error';
+        showNotification(`Error forking repo: ${error.message}`, true);
     }
+}
+
+async function checkForkStatus(repoName) {
+    const maxAttempts = 20; // ~2 minutes with 6-second intervals
+    let attempts = 0;
+
+    const interval = setInterval(async () => {
+        attempts++;
+        try {
+            const response = await fetch(`https://api.github.com/repos/${auth.getUser().login}/${repoName}`, {
+                headers: { 'Authorization': `token ${auth.getToken()}` }
+            });
+            if (response.ok) {
+                forkStatus.textContent = 'Fork Complete';
+                forkStatus.className = 'complete';
+                clearInterval(interval);
+                enableNextSteps();
+            } else if (attempts >= maxAttempts) {
+                forkStatus.textContent = 'Error: Fork timed out';
+                forkStatus.className = 'error';
+                clearInterval(interval);
+                showNotification('Forking took too long—check your GitHub repos.', true);
+            }
+        } catch (error) {
+            forkStatus.textContent = `Error: ${error.message}`;
+            forkStatus.className = 'error';
+            clearInterval(interval);
+            showNotification(`Error checking fork status: ${error.message}`, true);
+        }
+    }, 6000); // Check every 6 seconds
+}
+
+function enableNextSteps() {
+    document.getElementById('step-3').style.opacity = '1';
+    document.getElementById('step-3').style.pointerEvents = 'auto';
+    document.getElementById('step-4').style.opacity = '1';
+    document.getElementById('step-4').style.pointerEvents = 'auto';
+    document.getElementById('step-5').style.opacity = '1';
+    document.getElementById('step-5').style.pointerEvents = 'auto';
+    document.getElementById('step-6').style.opacity = '1';
+    document.getElementById('step-6').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -83,12 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    createRepoBtn.addEventListener('click', () => {
+    forkRepoBtn.addEventListener('click', () => {
         const repoName = repoNameInput.value.trim();
         if (!repoName) {
             showNotification('Please enter a repo name.', true);
             return;
         }
-        createRepo(repoName);
+        forkRepo(repoName);
     });
 });

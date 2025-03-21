@@ -28,30 +28,30 @@
                 <h2>Step-by-Step Guide</h2>
                 <div class="step-box">
                     <h3>Step 1: Fork Clone.Tools</h3>
-                    <p>Visit <a href="https://github.com/beb-cc0/beb-cc0.github.io" target="_blank">this link</a> and click "Fork" to create your own copy.</p>
-                </div>
-                <div class="step-box">
-                    <h3>Step 2: Name Your Site</h3>
                     <div class="form-row">
-                        <label for="repo-name">Your Site Repo Name:</label>
+                        <label for="repo-name">Your Site Name:</label>
                         <input type="text" id="repo-name" placeholder="e.g., rock.tools">
-                        <button id="create-repo-btn">Create Repo</button>
+                        <button id="fork-repo-btn">Fork Repo</button>
                     </div>
-                    <p>Enter a name for your site above. Click "Create Repo" to set it up automatically.</p>
+                    <p>Enter a unique name above (e.g., "rock.tools") and click "Fork Repo" to create your site.</p>
                 </div>
-                <div class="step-box">
+                <div class="step-box" id="step-2">
+                    <h3>Step 2: Check Fork Status</h3>
+                    <p>Status: <span id="fork-status">Waiting to start...</span></p>
+                </div>
+                <div class="step-box" id="step-3" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 3: Configure Your Site</h3>
                     <p>Use "My Portal" in the dropdown profile on your new website to configure it.</p>
                 </div>
-                <div class="step-box">
+                <div class="step-box" id="step-4" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 4: Enable GitHub Pages</h3>
                     <p>Go to your repo’s Settings > Pages, set the source to the main branch, and save.</p>
                 </div>
-                <div class="step-box">
+                <div class="step-box" id="step-5" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 5: Upload Your GLBs</h3>
                     <p>In "My Portal" on your new site, go to "Site Configuration" and set a repo for your GLB files under "GLB Repo Name" (e.g., "my-glb-repo"). Save the config, then use the "Upload Model" section to add your .glb files, along with optional .txt and .png files.</p>
                 </div>
-                <div class="step-box">
+                <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 6: Share Your Creation</h3>
                     <p>Once set up, select "Go Public" in My Portal to allow GLB.TOOLS to find your website.</p>
                 </div>
