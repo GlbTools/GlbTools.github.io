@@ -8,15 +8,9 @@ const createSection = document.getElementById('create-section');
 const forkRepoBtn = document.getElementById('fork-repo-btn');
 const repoNameInput = document.getElementById('repo-name');
 const forkStatus = document.getElementById('fork-status');
-const siteTitleInput = document.getElementById('site-title');
-const siteRepoOwnerInput = document.getElementById('site-repo-owner');
-const siteRepoNameInput = document.getElementById('site-repo-name');
-const thumbnailFileInput = document.getElementById('thumbnail-file');
-const thumbnailDropZone = document.getElementById('thumbnail-drop-zone');
 const glbRepoNameInput = document.getElementById('glb-repo-name');
 const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
 const glbRepoStatus = document.getElementById('glb-repo-status');
-const saveConfigBtn = document.getElementById('save-config-btn');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
@@ -41,15 +35,11 @@ function normalizeRepoName(name) {
 
 async function getUsername() {
     const token = auth.getToken();
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
+    if (!token) throw new Error('No authentication token found');
     const response = await fetch('https://api.github.com/user', {
         headers: { 'Authorization': `token ${token}` }
     });
-    if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-    }
+    if (!response.ok) throw new Error('Failed to fetch user data');
     const userData = await response.json();
     return userData.login;
 }
@@ -94,7 +84,6 @@ async function checkForkStatus(username, repoName) {
                 forkStatus.className = 'complete';
                 clearInterval(interval);
                 enableStep3();
-                populateStep5(username);
             } else if (attempts >= maxAttempts) {
                 forkStatus.textContent = 'Error: Fork timed out';
                 forkStatus.className = 'error';
@@ -108,27 +97,6 @@ async function checkForkStatus(username, repoName) {
             showNotification(`Error checking fork status: ${error.message}`, true);
         }
     }, 6000);
-}
-
-function enableStep3() {
-    document.getElementById('step-3').style.opacity = '1';
-    document.getElementById('step-3').style.pointerEvents = 'auto';
-}
-
-function enableStep4() {
-    document.getElementById('step-4').style.opacity = '1';
-    document.getElementById('step-4').style.pointerEvents = 'auto';
-}
-
-function enableNextSteps() {
-    document.getElementById('step-5').style.opacity = '1';
-    document.getElementById('step-5').style.pointerEvents = 'auto';
-    document.getElementById('step-6').style.opacity = '1';
-    document.getElementById('step-6').style.pointerEvents = 'auto';
-    document.getElementById('step-7').style.opacity = '1';
-    document.getElementById('step-7').style.pointerEvents = 'auto';
-    document.getElementById('step-8').style.opacity = '1';
-    document.getElementById('step-8').style.pointerEvents = 'auto';
 }
 
 async function createGlbRepo(repoName) {
@@ -149,8 +117,9 @@ async function createGlbRepo(repoName) {
         glbRepoStatus.textContent = 'Repo Created';
         glbRepoStatus.className = 'complete';
         glbRepoName = normalizedName;
-        showNotification(`GLB repo ${normalizedName} created!`);
-        enableStep4();
+        showNotification(`GLB repo ${normalizedName} created! Setting up config...`);
+        await saveConfig(username, normalizedName); // Auto-save config
+        enableNextSteps();
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
@@ -158,126 +127,55 @@ async function createGlbRepo(repoName) {
     }
 }
 
-async function populateStep5(username) {
-    siteRepoOwnerInput.value = username;
-    siteRepoNameInput.value = forkedRepoName;
-    siteTitleInput.value = forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
-
-async function saveConfig() {
-    try {
-        const username = await getUsername();
-        const config = {
-            glbRepoUsername: username,
-            glbRepoName: glbRepoName,
-            supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
-            supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
-            siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-            thumbnailPath: "thumbnail.jpg",
-            siteRepoOwner: username,
-            siteRepoName: forkedRepoName
-        };
-
-        if (!glbRepoName) {
-            showNotification('Please create a GLB repo first.', true);
-            return;
-        }
-
-        const thumbnailFile = thumbnailFileInput.files[0];
-        if (thumbnailFile) {
-            if (thumbnailFile.size > 100 * 1024) {
-                showNotification('Thumbnail must be less than 100KB', true);
-                return;
-            }
-            await uploadFile(username, forkedRepoName, 'thumbnail.jpg', thumbnailFile);
-        }
-
-        const content = btoa(JSON.stringify(config, null, 2));
-        const configResponse = await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/config.json`, {
-            headers: { 'Authorization': `token ${auth.getToken()}` }
-        });
-        let sha = null;
-        if (configResponse.ok) {
-            const configData = await configResponse.json();
-            sha = configData.sha;
-        }
-
-        const response = await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/config.json`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${auth.getToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'Update config.json',
-                content: content,
-                sha: sha
-            })
-        });
-        if (!response.ok) throw new Error('Failed to save config');
-        showNotification('Config saved successfully!');
-        enableNextSteps();
-    } catch (error) {
-        showNotification(`Error saving config: ${error.message}`, true);
-    }
-}
-
-async function uploadFile(username, repoName, path, file) {
-    const reader = new FileReader();
-    const content = await new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(file);
-    });
-
-    let sha = null;
-    try {
-        const checkResponse = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/${path}`, {
-            headers: { 'Authorization': `token ${auth.getToken()}` }
-        });
-        if (checkResponse.ok) {
-            const fileData = await checkResponse.json();
-            sha = fileData.sha;
-        }
-    } catch (error) {
-        if (error.status !== 404) throw new Error(`Failed to check file existence: ${error.message}`);
-    }
-
-    const body = {
-        message: sha ? `Update ${path}` : `Add ${path}`,
-        content: content
+async function saveConfig(username, glbRepoName) {
+    const config = {
+        glbRepoUsername: username,
+        glbRepoName: glbRepoName,
+        supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
+        supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
+        siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        thumbnailPath: "thumbnail.jpg",
+        siteRepoOwner: username,
+        siteRepoName: forkedRepoName
     };
-    if (sha) body.sha = sha;
 
-    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/${path}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `token ${auth.getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+    const content = btoa(JSON.stringify(config, null, 2));
+    const configResponse = await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/config.json`, {
+        headers: { 'Authorization': `token ${auth.getToken()}` }
     });
-    if (!response.ok) throw new Error(`Failed to upload ${path}`);
+    let sha = null;
+    if (configResponse.ok) {
+        const configData = await configResponse.json();
+        sha = configData.sha;
+    }
+
+    const response = await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/config.json`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${auth.getToken()}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message: 'Initialize config.json',
+            content: content,
+            sha: sha
+        })
+    });
+    if (!response.ok) throw new Error('Failed to save config');
 }
 
-function setupDragAndDrop(input, dropZone) {
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        input.files = e.dataTransfer.files;
-        input.dispatchEvent(new Event('change'));
-    });
-    dropZone.addEventListener('click', () => input.click());
-    input.addEventListener('change', () => {
-        if (input.files.length) {
-            dropZone.textContent = input.files[0].name;
-            dropZone.style.backgroundImage = 'none';
-        } else {
-            dropZone.textContent = '';
-            dropZone.style.backgroundImage = "url('dragdrop.svg')";
-        }
-    });
+function enableStep3() {
+    document.getElementById('step-3').style.opacity = '1';
+    document.getElementById('step-3').style.pointerEvents = 'auto';
+}
+
+function enableNextSteps() {
+    document.getElementById('step-5').style.opacity = '1';
+    document.getElementById('step-5').style.pointerEvents = 'auto';
+    document.getElementById('step-6').style.opacity = '1';
+    document.getElementById('step-6').style.pointerEvents = 'auto';
+    document.getElementById('step-7').style.opacity = '1';
+    document.getElementById('step-7').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -340,14 +238,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         createGlbRepo(repoName);
     });
-
-    saveConfigBtn.addEventListener('click', () => {
-        if (!glbRepoName) {
-            showNotification('Please create a GLB repo first.', true);
-            return;
-        }
-        saveConfig();
-    });
-
-    setupDragAndDrop(thumbnailFileInput, thumbnailDropZone);
 });
