@@ -11,6 +11,10 @@ const forkStatus = document.getElementById('fork-status');
 const glbRepoNameInput = document.getElementById('glb-repo-name');
 const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
 const glbRepoStatus = document.getElementById('glb-repo-status');
+const pagesLink = document.getElementById('pages-link');
+const liveSiteLink = document.getElementById('live-site-link');
+const portalUploadLink = document.getElementById('portal-upload-link');
+const portalShareLink = document.getElementById('portal-share-link');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
@@ -118,12 +122,24 @@ async function createGlbRepo(repoName) {
         glbRepoStatus.className = 'complete';
         glbRepoName = normalizedName;
         showNotification(`GLB repo ${normalizedName} created! Setting up config...`);
-        await saveConfig(username, normalizedName); // Auto-save config
+        await saveConfig(username, normalizedName);
+
+        // Update links
+        pagesLink.href = `https://github.com/${username}/${forkedRepoName}/settings/pages`;
+        pagesLink.textContent = 'Click here';
+        const liveUrl = `https://${username}.github.io/${forkedRepoName}/`;
+        liveSiteLink.href = liveUrl;
+        checkLiveSite(liveUrl);
+        portalUploadLink.href = `${liveUrl}portal.html`;
+        portalUploadLink.textContent = 'your portal';
+        portalShareLink.href = `${liveUrl}portal.html`;
+        portalShareLink.textContent = 'your portal';
+
         enableNextSteps();
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
-        showNotification(`Error creating GLB repo: ${error.message}`, true);
+        showNotification(`Error: ${error.message}`, true);
     }
 }
 
@@ -162,6 +178,30 @@ async function saveConfig(username, glbRepoName) {
         })
     });
     if (!response.ok) throw new Error('Failed to save config');
+}
+
+async function checkLiveSite(url) {
+    const maxAttempts = 10;
+    let attempts = 0;
+
+    const interval = setInterval(async () => {
+        attempts++;
+        try {
+            const response = await fetch(url, { method: 'HEAD' });
+            if (response.ok) {
+                liveSiteLink.textContent = url;
+                clearInterval(interval);
+            } else if (attempts >= maxAttempts) {
+                liveSiteLink.textContent = `${url} (not live yet—wait a few minutes)`;
+                clearInterval(interval);
+            }
+        } catch (error) {
+            if (attempts >= maxAttempts) {
+                liveSiteLink.textContent = `${url} (not live yet—wait a few minutes)`;
+                clearInterval(interval);
+            }
+        }
+    }, 6000);
 }
 
 function enableStep3() {
