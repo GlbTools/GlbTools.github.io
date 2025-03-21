@@ -11,9 +11,10 @@ const forkStatus = document.getElementById('fork-status');
 const glbRepoNameInput = document.getElementById('glb-repo-name');
 const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
 const glbRepoStatus = document.getElementById('glb-repo-status');
+const pagesLink = document.getElementById('pages-link');
+const pagesStatus = document.getElementById('pages-status');
 const liveSiteLink = document.getElementById('live-site-link');
-const portalUploadLink = document.getElementById('portal-upload-link');
-const portalShareLink = document.getElementById('portal-share-link');
+const portalLink = document.getElementById('portal-link');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
@@ -109,7 +110,6 @@ async function createGlbRepo(repoName) {
         glbRepoStatus.textContent = 'Creating...';
         glbRepoStatus.className = 'pending';
 
-        // Create GLB repo
         const glbResponse = await fetch('https://api.github.com/user/repos', {
             method: 'POST',
             headers: {
@@ -124,33 +124,13 @@ async function createGlbRepo(repoName) {
         showNotification(`GLB repo ${normalizedGlbName} created! Setting up config...`);
         await saveConfig(username, normalizedGlbName);
 
-        // Commit .nojekyll to trigger Pages
-        const nojekyllContent = btoa(''); // Empty file
-        await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/.nojekyll`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${auth.getToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'Enable GitHub Pages with .nojekyll',
-                content: nojekyllContent
-            })
-        });
-
         glbRepoStatus.textContent = 'Repo Created';
         glbRepoStatus.className = 'complete';
 
-        // Update links
-        const liveUrl = `https://${username}.github.io/${forkedRepoName}/`;
-        liveSiteLink.href = liveUrl;
-        checkLiveSite(liveUrl);
-        portalUploadLink.href = `${liveUrl}portal.html`;
-        portalUploadLink.textContent = 'your portal';
-        portalShareLink.href = `${liveUrl}portal.html`;
-        portalShareLink.textContent = 'your portal';
+        pagesLink.href = `https://github.com/${username}/${forkedRepoName}/settings/pages`;
+        pagesLink.textContent = 'Click here';
 
-        enableNextSteps();
+        enableStep5();
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
@@ -162,8 +142,8 @@ async function saveConfig(username, glbRepoName) {
     const config = {
         glbRepoUsername: username,
         glbRepoName: glbRepoName,
-        supabaseUrl: "", // Placeholder—user must set this later
-        supabaseAnonKey: "", // Placeholder—user must set this later
+        supabaseUrl: "YOUR_SUPABASE_URL_HERE",
+        supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY_HERE",
         siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
@@ -195,24 +175,36 @@ async function saveConfig(username, glbRepoName) {
     if (!response.ok) throw new Error('Failed to save config');
 }
 
-async function checkLiveSite(url) {
+async function checkPagesStatus(username, repoName) {
+    const liveUrl = `https://${username}.github.io/${repoName}/`;
+    liveSiteLink.href = liveUrl;
+    portalLink.href = `${liveUrl}portal.html`;
+    portalLink.textContent = 'your portal';
+
     const maxAttempts = 10;
     let attempts = 0;
 
     const interval = setInterval(async () => {
         attempts++;
         try {
-            const response = await fetch(url, { method: 'HEAD' });
+            const response = await fetch(liveUrl, { method: 'HEAD' });
             if (response.ok) {
-                liveSiteLink.textContent = url;
+                pagesStatus.textContent = 'Pages Live';
+                pagesStatus.className = 'complete';
+                liveSiteLink.textContent = liveUrl;
                 clearInterval(interval);
+                enableNextSteps();
             } else if (attempts >= maxAttempts) {
-                liveSiteLink.textContent = `${url} (not live yet—wait a few minutes)`;
+                pagesStatus.textContent = 'Not live yet—ensure Pages is enabled';
+                pagesStatus.className = 'error';
+                liveSiteLink.textContent = `${liveUrl} (not live yet)`;
                 clearInterval(interval);
             }
         } catch (error) {
             if (attempts >= maxAttempts) {
-                liveSiteLink.textContent = `${url} (not live yet—wait a few minutes)`;
+                pagesStatus.textContent = 'Not live yet—ensure Pages is enabled';
+                pagesStatus.className = 'error';
+                liveSiteLink.textContent = `${liveUrl} (not live yet)`;
                 clearInterval(interval);
             }
         }
@@ -224,9 +216,12 @@ function enableStep3() {
     document.getElementById('step-3').style.pointerEvents = 'auto';
 }
 
-function enableNextSteps() {
+function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
+}
+
+function enableNextSteps() {
     document.getElementById('step-6').style.opacity = '1';
     document.getElementById('step-6').style.pointerEvents = 'auto';
     document.getElementById('step-7').style.opacity = '1';
@@ -285,12 +280,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         forkRepo(repoName);
     });
 
-    createGlbRepoBtn.addEventListener('click', () => {
+    createGlbRepoBtn.addEventListener('click', async () => {
         const repoName = glbRepoNameInput.value.trim();
         if (!repoName) {
             showNotification('Please enter a GLB repo name.', true);
             return;
         }
-        createGlbRepo(repoName);
+        await createGlbRepo(repoName);
+        const username = await getUsername();
+        checkPagesStatus(username, forkedRepoName); // Start checking Pages status
     });
 });
