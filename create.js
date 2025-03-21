@@ -74,7 +74,7 @@ async function checkForkStatus(repoName) {
                 forkStatus.className = 'complete';
                 clearInterval(interval);
                 enableStep3();
-                populateStep3();
+                populateStep5();
             } else if (attempts >= maxAttempts) {
                 forkStatus.textContent = 'Error: Fork timed out';
                 forkStatus.className = 'error';
@@ -95,19 +95,20 @@ function enableStep3() {
     document.getElementById('step-3').style.pointerEvents = 'auto';
 }
 
-function enableNextSteps() {
+function enableStep4() {
     document.getElementById('step-4').style.opacity = '1';
     document.getElementById('step-4').style.pointerEvents = 'auto';
+}
+
+function enableNextSteps() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
     document.getElementById('step-6').style.opacity = '1';
     document.getElementById('step-6').style.pointerEvents = 'auto';
-}
-
-async function populateStep3() {
-    siteRepoOwnerInput.value = username;
-    siteRepoNameInput.value = forkedRepoName;
-    siteTitleInput.value = forkedRepoName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); // e.g., "rock.tools" → "Rock Tools"
+    document.getElementById('step-7').style.opacity = '1';
+    document.getElementById('step-7').style.pointerEvents = 'auto';
+    document.getElementById('step-8').style.opacity = '1';
+    document.getElementById('step-8').style.pointerEvents = 'auto';
 }
 
 async function createGlbRepo(repoName) {
@@ -127,12 +128,18 @@ async function createGlbRepo(repoName) {
         glbRepoStatus.className = 'complete';
         glbRepoName = repoName;
         showNotification(`GLB repo ${repoName} created!`);
-        enableNextSteps();
+        enableStep4();
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
         showNotification(`Error creating GLB repo: ${error.message}`, true);
     }
+}
+
+async function populateStep5() {
+    siteRepoOwnerInput.value = username;
+    siteRepoNameInput.value = forkedRepoName;
+    siteTitleInput.value = forkedRepoName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 async function saveConfig() {
@@ -181,6 +188,7 @@ async function saveConfig() {
         });
         if (!response.ok) throw new Error('Failed to save config');
         showNotification('Config saved successfully!');
+        enableNextSteps();
     } catch (error) {
         showNotification(`Error saving config: ${error.message}`, true);
     }

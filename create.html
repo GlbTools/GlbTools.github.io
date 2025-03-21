@@ -40,15 +40,20 @@
                     <p>Status: <span id="fork-status">Waiting to start...</span></p>
                 </div>
                 <div class="step-box" id="step-3" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 3: Configure Your Site</h3>
+                    <h3>Step 3: Create GLB Repo (Where we will save our .GLB Files)</h3>
                     <div class="form-row">
-                        <label>Create GLB Repo:</label>
+                        <label for="glb-repo-name">GLB Repo Name:</label>
                         <input type="text" id="glb-repo-name" placeholder="e.g., rock-glb">
                         <button id="create-glb-repo-btn">Create GLB Repo</button>
                     </div>
-                    <p>Status: <span id="glb-repo-status">Waiting to start...</span></p>
                     <p>Enter a name for your GLB storage repo and click "Create GLB Repo" to set it up.</p>
-                    <hr class="section-divider">
+                </div>
+                <div class="step-box" id="step-4" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 4: Check GLB Repo Status</h3>
+                    <p>Status: <span id="glb-repo-status">Waiting to start...</span></p>
+                </div>
+                <div class="step-box" id="step-5" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 5: Configure Your Site</h3>
                     <div class="form-row">
                         <label for="site-title">Site Title:</label>
                         <input type="text" id="site-title" placeholder="e.g., Rock.Tools">
@@ -71,16 +76,16 @@
                         <button id="save-config-btn">Save Config</button>
                     </div>
                 </div>
-                <div class="step-box" id="step-4" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 4: Enable GitHub Pages</h3>
+                <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 6: Enable GitHub Pages</h3>
                     <p>Go to your repo’s Settings > Pages, set the source to the main branch, and save.</p>
                 </div>
-                <div class="step-box" id="step-5" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 5: Upload Your GLBs</h3>
+                <div class="step-box" id="step-7" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 7: Upload Your GLBs</h3>
                     <p>In "My Portal" on your new site, use the "Upload Model" section to add your .glb files, along with optional .txt and .png files.</p>
                 </div>
-                <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 6: Share Your Creation</h3>
+                <div class="step-box" id="step-8" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 8: Share Your Creation</h3>
                     <p>Once set up, select "Go Public" in My Portal to allow GLB.TOOLS to find your website.</p>
                 </div>
             </div>
