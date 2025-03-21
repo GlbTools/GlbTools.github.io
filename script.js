@@ -2,11 +2,15 @@ console.log('script.js loaded');
 
 const grid = document.getElementById('site-grid');
 const searchInput = document.getElementById('search-input');
+const loginBtn = document.getElementById('login-btn');
+const profileDropdown = document.getElementById('profile-dropdown');
+const logoutBtn = document.getElementById('logout-btn');
+const letsCreateLink = document.getElementById('lets-create-link');
 let allSites = [];
+let dropdownVisible = false;
 
 async function loadSites() {
     try {
-        // Fetch repos tagged with 'glbtools'
         const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools', {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
@@ -14,13 +18,11 @@ async function loadSites() {
         const data = await response.json();
         const repos = data.items;
 
-        // Process each repo
         allSites = await Promise.all(repos.map(async repo => {
             const owner = repo.owner.login;
             const repoName = repo.name;
             const configUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/config.json`;
 
-            // Fetch config.json
             try {
                 const configResponse = await fetch(configUrl);
                 if (!configResponse.ok) throw new Error(`No config.json in ${owner}/${repoName}`);
@@ -39,7 +41,6 @@ async function loadSites() {
             }
         }));
 
-        // Filter out null entries (failed fetches)
         allSites = allSites.filter(site => site !== null);
         renderGrid();
     } catch (error) {
@@ -84,8 +85,49 @@ function renderGrid() {
     });
 }
 
-searchInput.addEventListener('input', renderGrid);
-
 document.addEventListener('DOMContentLoaded', () => {
     loadSites();
+
+    auth.checkSession(async (user) => {
+        if (user && auth.getToken()) {
+            auth.updateLoginDisplay(user, loginBtn);
+            profileDropdown.style.display = 'none';
+            letsCreateLink.style.display = 'none'; // Hide public link when logged in
+        } else {
+            loginBtn.innerHTML = 'Login with GitHub';
+            loginBtn.classList.remove('profile');
+            loginBtn.disabled = false;
+            profileDropdown.style.display = 'none';
+            letsCreateLink.style.display = 'block'; // Show public link when logged out
+        }
+    });
+
+    loginBtn.addEventListener('click', async () => {
+        if (loginBtn.classList.contains('profile')) {
+            dropdownVisible = !dropdownVisible;
+            profileDropdown.style.display = dropdownVisible ? 'block' : 'none';
+        } else {
+            const error = await auth.loginWithGitHub();
+            if (error) showNotification(`Login failed: ${error}`, true);
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await auth.signOut();
+        loginBtn.innerHTML = 'Login with GitHub';
+        loginBtn.classList.remove('profile');
+        loginBtn.disabled = false;
+        profileDropdown.style.display = 'none';
+        dropdownVisible = false;
+        letsCreateLink.style.display = 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!loginBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.style.display = 'none';
+            dropdownVisible = false;
+        }
+    });
+
+    searchInput.addEventListener('input', renderGrid);
 });

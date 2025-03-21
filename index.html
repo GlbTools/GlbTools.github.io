@@ -5,13 +5,22 @@
     <title>GLB.TOOLS</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
 </head>
 <body>
     <header>
         <a href="#" class="logo">GLB.TOOLS</a>
         <input type="text" placeholder="Search sites..." class="search-bar" id="search-input">
         <div class="nav">
-            <a href="https://github.com/your-org/clone.tools" target="_blank">Fork Clone.Tools</a>
+            <div class="profile-container">
+                <button id="login-btn">Login with GitHub</button>
+                <div class="dropdown" id="profile-dropdown" style="display: none;">
+                    <a href="create.html" class="dropdown-item" id="create-link">Let’s Create</a>
+                    <button class="dropdown-item" id="logout-btn">Logout</button>
+                </div>
+            </div>
+            <a href="create.html" id="lets-create-link">Let’s Create</a>
         </div>
     </header>
     <main>

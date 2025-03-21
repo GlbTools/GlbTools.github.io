@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Let’s Create - GLB.TOOLS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">GLB.TOOLS</a>
+        <div class="nav">
+            <div class="profile-container">
+                <button id="login-btn">Login with GitHub</button>
+                <div class="dropdown" id="profile-dropdown" style="display: none;">
+                    <a href="create.html" class="dropdown-item" id="create-link">Let’s Create</a>
+                    <button class="dropdown-item" id="logout-btn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="portal-container">
+            <h1>Let’s Create Your Own GLB Site</h1>
+            <div id="login-message">Please log in with GitHub to start creating.</div>
+            <div id="create-section" class="section-box" style="display: none;">
+                <h2>Step-by-Step Guide</h2>
+                <div class="guide">
+                    <h3>1. Fork Clone.Tools</h3>
+                    <p>Visit <a href="https://github.com/your-org/clone.tools" target="_blank">Clone.Tools on GitHub</a> and click "Fork" to create your own copy.</p>
+                    <h3>2. Name Your Site</h3>
+                    <div class="form-row">
+                        <label for="repo-name">Your Site Repo Name:</label>
+                        <input type="text" id="repo-name" placeholder="e.g., rock.tools">
+                        <button id="create-repo-btn">Create Repo</button>
+                    </div>
+                    <p>Enter a name for your site above. Click "Create Repo" to set it up automatically, or manually rename your fork on GitHub.</p>
+                    <h3>3. Configure Your Site</h3>
+                    <p>Edit <code>config.json</code> in your repo with your site title, thumbnail path, and repo details. Upload a <code>thumbnail.jpg</code> (800x450px, max 100KB) to your repo root.</p>
+                    <h3>4. Enable GitHub Pages</h3>
+                    <p>Go to your repo’s Settings > Pages, set the source to the <code>main</code> branch, and save. Your site will be live at <code>https://yourusername.github.io/your-repo-name</code>.</p>
+                    <h3>5. Share Your Creation</h3>
+                    <p>Once set up, your site will appear on GLB.TOOLS automatically (if tagged with <code>glbtools</code>). Share it with the world!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="create.js"></script>
+</body>
+</html>
