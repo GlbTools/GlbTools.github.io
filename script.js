@@ -25,13 +25,22 @@ async function loadSites() {
 
             try {
                 const configResponse = await fetch(configUrl);
-                if (!configResponse.ok) throw new Error(`No config.json in ${owner}/${repoName}`);
-                const config = await configResponse.json();
+                if (!configResponse.ok) {
+                    console.warn(`No config.json in ${owner}/${repoName} (status: ${configResponse.status}), skipping...`);
+                    return null;
+                }
+                const configText = await configResponse.text();
+                const config = JSON.parse(configText);
+
+                if (!config.siteTitle || !config.siteRepoOwner || !config.websiteRepoName) {
+                    console.warn(`Invalid config.json in ${owner}/${repoName} (missing required fields), skipping...`);
+                    return null;
+                }
 
                 return {
-                    name: config.siteTitle || repoName,
-                    thumbnail: `https://raw.githubusercontent.com/${owner}/${repoName}/main/${config.thumbnailPath || 'thumbnail.jpg'}`,
-                    url: `https://${owner}.github.io/${repoName}`,
+                    name: config.siteTitle,
+                    thumbnail: `https://raw.githubusercontent.com/${config.siteRepoOwner}/${config.websiteRepoName}/main/${config.thumbnailPath || 'thumbnail.jpg'}`,
+                    url: `https://${config.siteRepoOwner}.github.io/${config.websiteRepoName}`,
                     owner: owner,
                     repo: repoName
                 };
@@ -42,6 +51,9 @@ async function loadSites() {
         }));
 
         allSites = allSites.filter(site => site !== null);
+        if (allSites.length === 0) {
+            showNotification('No valid GLB sites found. Fork Clone.Tools to get started!', true);
+        }
         renderGrid();
     } catch (error) {
         showNotification(`Error loading sites: ${error.message}`, true);
@@ -85,30 +97,42 @@ function renderGrid() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadSites();
-
-    auth.checkSession(async (user) => {
-        if (user && auth.getToken()) {
-            auth.updateLoginDisplay(user, loginBtn);
-            profileDropdown.style.display = 'none';
-            letsCreateLink.style.display = 'none'; // Hide public link when logged in
-        } else {
-            loginBtn.innerHTML = 'Login with GitHub';
-            loginBtn.classList.remove('profile');
-            loginBtn.disabled = false;
-            profileDropdown.style.display = 'none';
-            letsCreateLink.style.display = 'block'; // Show public link when logged out
-        }
-    });
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await auth.checkSession(async (user) => {
+            if (user && auth.getToken()) {
+                console.log('Logged in as:', user);
+                auth.updateLoginDisplay(user, loginBtn);
+                profileDropdown.style.display = 'none';
+                letsCreateLink.style.display = 'none';
+            } else {
+                console.log('Not logged in');
+                loginBtn.innerHTML = 'Login with GitHub';
+                loginBtn.classList.remove('profile');
+                loginBtn.disabled = false;
+                profileDropdown.style.display = 'none';
+                letsCreateLink.style.display = 'block';
+            }
+        });
+        loadSites();
+    } catch (error) {
+        console.error('Auth error:', error);
+        showNotification(`Login setup failed: ${error.message}. Sites will still load.`, true);
+        loadSites(); // Proceed even if auth fails
+    }
 
     loginBtn.addEventListener('click', async () => {
         if (loginBtn.classList.contains('profile')) {
             dropdownVisible = !dropdownVisible;
             profileDropdown.style.display = dropdownVisible ? 'block' : 'none';
         } else {
-            const error = await auth.loginWithGitHub();
-            if (error) showNotification(`Login failed: ${error}`, true);
+            try {
+                const error = await auth.loginWithGitHub();
+                if (error) throw new Error(`Login failed: ${error}`);
+                console.log('Login successful');
+            } catch (error) {
+                showNotification(error.message, true);
+            }
         }
     });
 
