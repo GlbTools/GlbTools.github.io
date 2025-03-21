@@ -10,14 +10,16 @@ const repoNameInput = document.getElementById('repo-name');
 const forkStatus = document.getElementById('fork-status');
 const siteTitleInput = document.getElementById('site-title');
 const siteRepoOwnerInput = document.getElementById('site-repo-owner');
-const websiteRepoNameInput = document.getElementById('website-repo-name');
+const siteRepoNameInput = document.getElementById('site-repo-name');
 const thumbnailFileInput = document.getElementById('thumbnail-file');
 const thumbnailDropZone = document.getElementById('thumbnail-drop-zone');
-const glbRepoNameSelect = document.getElementById('glb-repo-name');
-const newGlbRepoNameInput = document.getElementById('new-glb-repo-name');
+const glbRepoNameInput = document.getElementById('glb-repo-name');
+const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
+const glbRepoStatus = document.getElementById('glb-repo-status');
 const saveConfigBtn = document.getElementById('save-config-btn');
 let dropdownVisible = false;
 let forkedRepoName = null;
+let glbRepoName = null;
 let username = null;
 
 function showNotification(message, isError = false) {
@@ -71,7 +73,7 @@ async function checkForkStatus(repoName) {
                 forkStatus.textContent = 'Fork Complete';
                 forkStatus.className = 'complete';
                 clearInterval(interval);
-                enableNextSteps();
+                enableStep3();
                 populateStep3();
             } else if (attempts >= maxAttempts) {
                 forkStatus.textContent = 'Error: Fork timed out';
@@ -88,9 +90,12 @@ async function checkForkStatus(repoName) {
     }, 6000);
 }
 
-function enableNextSteps() {
+function enableStep3() {
     document.getElementById('step-3').style.opacity = '1';
     document.getElementById('step-3').style.pointerEvents = 'auto';
+}
+
+function enableNextSteps() {
     document.getElementById('step-4').style.opacity = '1';
     document.getElementById('step-4').style.pointerEvents = 'auto';
     document.getElementById('step-5').style.opacity = '1';
@@ -101,62 +106,48 @@ function enableNextSteps() {
 
 async function populateStep3() {
     siteRepoOwnerInput.value = username;
-    websiteRepoNameInput.value = forkedRepoName;
+    siteRepoNameInput.value = forkedRepoName;
+    siteTitleInput.value = forkedRepoName.split('.').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); // e.g., "rock.tools" → "Rock Tools"
+}
+
+async function createGlbRepo(repoName) {
     try {
-        const reposResponse = await fetch(`https://api.github.com/user/repos`, {
-            headers: { 'Authorization': `token ${auth.getToken()}` }
+        glbRepoStatus.textContent = 'Creating...';
+        glbRepoStatus.className = 'pending';
+        const response = await fetch('https://api.github.com/user/repos', {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${auth.getToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: repoName, private: false })
         });
-        if (!reposResponse.ok) throw new Error('Failed to fetch user repos');
-        const repos = await reposResponse.json();
-        glbRepoNameSelect.innerHTML = '<option value="">Select or enter a new repo name</option>';
-        repos.forEach(repo => {
-            const option = document.createElement('option');
-            option.value = repo.name;
-            option.textContent = repo.name;
-            glbRepoNameSelect.appendChild(option);
-        });
+        if (!response.ok) throw new Error('Failed to create GLB repo');
+        glbRepoStatus.textContent = 'Repo Created';
+        glbRepoStatus.className = 'complete';
+        glbRepoName = repoName;
+        showNotification(`GLB repo ${repoName} created!`);
+        enableNextSteps();
     } catch (error) {
-        showNotification(`Error loading repos: ${error.message}`, true);
+        glbRepoStatus.textContent = `Error: ${error.message}`;
+        glbRepoStatus.className = 'error';
+        showNotification(`Error creating GLB repo: ${error.message}`, true);
     }
 }
 
 async function saveConfig() {
     const config = {
         glbRepoUsername: username,
-        glbRepoName: glbRepoNameSelect.value || newGlbRepoNameInput.value.trim(),
-        supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co", // From glb.tools config
+        glbRepoName: glbRepoName,
+        supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
         supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
-        siteTitle: siteTitleInput.value.trim(),
+        siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value,
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
-        websiteRepoName: forkedRepoName
+        siteRepoName: forkedRepoName
     };
 
-    if (!config.siteTitle) {
-        showNotification('Please enter a site title.', true);
-        return;
-    }
-    if (!config.glbRepoName) {
-        showNotification('Please select or enter a GLB repo name.', true);
-        return;
-    }
-
     try {
-        // Create GLB repo if new
-        if (!glbRepoNameSelect.value && newGlbRepoNameInput.value.trim()) {
-            const response = await fetch('https://api.github.com/user/repos', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${auth.getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name: newGlbRepoNameInput.value.trim(), private: false })
-            });
-            if (!response.ok) throw new Error('Failed to create GLB repo');
-            showNotification(`GLB repo ${newGlbRepoNameInput.value.trim()} created!`);
-        }
-
-        // Upload thumbnail if provided
         const thumbnailFile = thumbnailFileInput.files[0];
         if (thumbnailFile) {
             if (thumbnailFile.size > 100 * 1024) {
@@ -166,7 +157,6 @@ async function saveConfig() {
             await uploadFile(username, forkedRepoName, 'thumbnail.jpg', thumbnailFile);
         }
 
-        // Save config.json
         const content = btoa(JSON.stringify(config, null, 2));
         const configResponse = await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/config.json`, {
             headers: { 'Authorization': `token ${auth.getToken()}` }
@@ -213,9 +203,7 @@ async function uploadFile(username, repoName, path, file) {
             sha = fileData.sha;
         }
     } catch (error) {
-        if (error.status !== 404) {
-            throw new Error(`Failed to check file existence: ${error.message}`);
-        }
+        if (error.status !== 404) throw new Error(`Failed to check file existence: ${error.message}`);
     }
 
     const body = {
@@ -309,7 +297,20 @@ document.addEventListener('DOMContentLoaded', () => {
         forkRepo(repoName);
     });
 
+    createGlbRepoBtn.addEventListener('click', () => {
+        const repoName = glbRepoNameInput.value.trim();
+        if (!repoName) {
+            showNotification('Please enter a GLB repo name.', true);
+            return;
+        }
+        createGlbRepo(repoName);
+    });
+
     saveConfigBtn.addEventListener('click', () => {
+        if (!glbRepoName) {
+            showNotification('Please create a GLB repo first.', true);
+            return;
+        }
         saveConfig();
     });
 

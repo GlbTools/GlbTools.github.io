@@ -42,6 +42,14 @@
                 <div class="step-box" id="step-3" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 3: Configure Your Site</h3>
                     <div class="form-row">
+                        <label>Create GLB Repo:</label>
+                        <input type="text" id="glb-repo-name" placeholder="e.g., rock-glb">
+                        <button id="create-glb-repo-btn">Create GLB Repo</button>
+                    </div>
+                    <p>Status: <span id="glb-repo-status">Waiting to start...</span></p>
+                    <p>Enter a name for your GLB storage repo and click "Create GLB Repo" to set it up.</p>
+                    <hr class="section-divider">
+                    <div class="form-row">
                         <label for="site-title">Site Title:</label>
                         <input type="text" id="site-title" placeholder="e.g., Rock.Tools">
                     </div>
@@ -50,21 +58,14 @@
                         <input type="text" id="site-repo-owner" readonly>
                     </div>
                     <div class="form-row">
-                        <label for="website-repo-name">Website Repo Name:</label>
-                        <input type="text" id="website-repo-name" readonly>
+                        <label for="site-repo-name">Site Repo Name:</label>
+                        <input type="text" id="site-repo-name" readonly>
                     </div>
                     <div class="form-row">
                         <label for="thumbnail-file">Site Thumbnail (.jpg):</label>
                         <div id="thumbnail-drop-zone" class="dropzone"></div>
                         <input type="file" id="thumbnail-file" accept=".jpg">
                         <p class="guidelines">Recommended: 800x450px, max 100KB</p>
-                    </div>
-                    <div class="form-row">
-                        <label for="glb-repo-name">GLB Repo Name:</label>
-                        <select id="glb-repo-name">
-                            <option value="">Select or enter a new repo name</option>
-                        </select>
-                        <input type="text" id="new-glb-repo-name" placeholder="e.g., my-glb-repo">
                     </div>
                     <div class="button-container">
                         <button id="save-config-btn">Save Config</button>

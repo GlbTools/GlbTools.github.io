@@ -1194,3 +1194,29 @@ footer a:hover {
 #thumbnail-drop-zone.dragover {
     border-color: #ff6f61;
 }
+
+#create-glb-repo-btn {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Bungee', cursive;
+}
+
+#create-glb-repo-btn:hover {
+    background: #e65a50;
+}
+
+#glb-repo-status.pending {
+    color: #ff6f61;
+}
+
+#glb-repo-status.complete {
+    color: #44ff44;
+}
+
+#glb-repo-status.error {
+    color: #ff4444;
+}
