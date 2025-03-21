@@ -39,15 +39,25 @@ function normalizeRepoName(name) {
     return name.trim().replace(/\s+/g, '-');
 }
 
-async function forkRepo(newName) {
-    const user = auth.getUser();
-    if (!user || !auth.getToken()) {
-        showNotification('Please log in first.', true);
-        return;
+async function getUsername() {
+    const token = auth.getToken();
+    if (!token) {
+        throw new Error('No authentication token found');
     }
-    const username = user.login;
-    const normalizedName = normalizeRepoName(newName);
+    const response = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `token ${token}` }
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+    }
+    const userData = await response.json();
+    return userData.login;
+}
+
+async function forkRepo(newName) {
     try {
+        const username = await getUsername();
+        const normalizedName = normalizeRepoName(newName);
         forkStatus.textContent = 'Forking...';
         forkStatus.className = 'pending';
         const response = await fetch('https://api.github.com/repos/beb-cc0/beb-cc0.github.io/forks', {
@@ -122,14 +132,9 @@ function enableNextSteps() {
 }
 
 async function createGlbRepo(repoName) {
-    const user = auth.getUser();
-    if (!user || !auth.getToken()) {
-        showNotification('Please log in first.', true);
-        return;
-    }
-    const username = user.login;
-    const normalizedName = normalizeRepoName(repoName);
     try {
+        const username = await getUsername();
+        const normalizedName = normalizeRepoName(repoName);
         glbRepoStatus.textContent = 'Creating...';
         glbRepoStatus.className = 'pending';
         const response = await fetch('https://api.github.com/user/repos', {
@@ -160,29 +165,24 @@ async function populateStep5(username) {
 }
 
 async function saveConfig() {
-    const user = auth.getUser();
-    if (!user || !auth.getToken()) {
-        showNotification('Please log in first.', true);
-        return;
-    }
-    const username = user.login;
-    const config = {
-        glbRepoUsername: username,
-        glbRepoName: glbRepoName,
-        supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
-        supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
-        siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        thumbnailPath: "thumbnail.jpg",
-        siteRepoOwner: username,
-        siteRepoName: forkedRepoName
-    };
-
-    if (!glbRepoName) {
-        showNotification('Please create a GLB repo first.', true);
-        return;
-    }
-
     try {
+        const username = await getUsername();
+        const config = {
+            glbRepoUsername: username,
+            glbRepoName: glbRepoName,
+            supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
+            supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
+            siteTitle: siteTitleInput.value.trim() || siteRepoNameInput.value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+            thumbnailPath: "thumbnail.jpg",
+            siteRepoOwner: username,
+            siteRepoName: forkedRepoName
+        };
+
+        if (!glbRepoName) {
+            showNotification('Please create a GLB repo first.', true);
+            return;
+        }
+
         const thumbnailFile = thumbnailFileInput.files[0];
         if (thumbnailFile) {
             if (thumbnailFile.size > 100 * 1024) {
@@ -281,7 +281,6 @@ function setupDragAndDrop(input, dropZone) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // No need to disable button here—it’s enabled by default and checked in the listener
     await auth.checkSession(async (user) => {
         if (user && auth.getToken()) {
             auth.updateLoginDisplay(user, loginBtn);
