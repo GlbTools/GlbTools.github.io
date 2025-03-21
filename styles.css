@@ -1153,3 +1153,44 @@ footer a:hover {
 #fork-status.error {
     color: #ff4444; /* Red for error */
 }
+
+#save-config-btn {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Bungee', cursive;
+}
+
+#save-config-btn:hover {
+    background: #e65a50;
+}
+
+#glb-repo-name, #new-glb-repo-name {
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #fff;
+}
+
+#thumbnail-drop-zone {
+    background: #2a2a2a url('dragdrop.svg') no-repeat center;
+    background-size: 50px;
+    border: 2px dashed #444;
+    border-radius: 5px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+#thumbnail-drop-zone.dragover {
+    border-color: #ff6f61;
+}

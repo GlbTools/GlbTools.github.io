@@ -41,7 +41,34 @@
                 </div>
                 <div class="step-box" id="step-3" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 3: Configure Your Site</h3>
-                    <p>Use "My Portal" in the dropdown profile on your new website to configure it.</p>
+                    <div class="form-row">
+                        <label for="site-title">Site Title:</label>
+                        <input type="text" id="site-title" placeholder="e.g., Rock.Tools">
+                    </div>
+                    <div class="form-row">
+                        <label for="site-repo-owner">Site Repo Owner:</label>
+                        <input type="text" id="site-repo-owner" readonly>
+                    </div>
+                    <div class="form-row">
+                        <label for="website-repo-name">Website Repo Name:</label>
+                        <input type="text" id="website-repo-name" readonly>
+                    </div>
+                    <div class="form-row">
+                        <label for="thumbnail-file">Site Thumbnail (.jpg):</label>
+                        <div id="thumbnail-drop-zone" class="dropzone"></div>
+                        <input type="file" id="thumbnail-file" accept=".jpg">
+                        <p class="guidelines">Recommended: 800x450px, max 100KB</p>
+                    </div>
+                    <div class="form-row">
+                        <label for="glb-repo-name">GLB Repo Name:</label>
+                        <select id="glb-repo-name">
+                            <option value="">Select or enter a new repo name</option>
+                        </select>
+                        <input type="text" id="new-glb-repo-name" placeholder="e.g., my-glb-repo">
+                    </div>
+                    <div class="button-container">
+                        <button id="save-config-btn">Save Config</button>
+                    </div>
                 </div>
                 <div class="step-box" id="step-4" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 4: Enable GitHub Pages</h3>
@@ -49,7 +76,7 @@
                 </div>
                 <div class="step-box" id="step-5" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 5: Upload Your GLBs</h3>
-                    <p>In "My Portal" on your new site, go to "Site Configuration" and set a repo for your GLB files under "GLB Repo Name" (e.g., "my-glb-repo"). Save the config, then use the "Upload Model" section to add your .glb files, along with optional .txt and .png files.</p>
+                    <p>In "My Portal" on your new site, use the "Upload Model" section to add your .glb files, along with optional .txt and .png files.</p>
                 </div>
                 <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 6: Share Your Creation</h3>
