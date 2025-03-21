@@ -1,10 +1,64 @@
 console.log('script.js loaded');
 
+const grid = document.getElementById('site-grid');
+const searchInput = document.getElementById('search-input');
 const loginBtn = document.getElementById('login-btn');
 const profileDropdown = document.getElementById('profile-dropdown');
 const logoutBtn = document.getElementById('logout-btn');
 const letsCreateLink = document.getElementById('lets-create-link');
+let allSites = [];
 let dropdownVisible = false;
+
+async function loadSites() {
+    try {
+        const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools', {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!response.ok) throw new Error(`Failed to fetch repos: ${response.status}`);
+        const data = await response.json();
+        const repos = data.items;
+
+        allSites = await Promise.all(repos.map(async repo => {
+            const owner = repo.owner.login;
+            const repoName = repo.name;
+            const configUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/config.json`;
+
+            try {
+                const configResponse = await fetch(configUrl);
+                if (!configResponse.ok) {
+                    console.warn(`No config.json in ${owner}/${repoName} (status: ${configResponse.status}), skipping...`);
+                    return null;
+                }
+                const configText = await configResponse.text();
+                const config = JSON.parse(configText);
+
+                if (!config.siteTitle || !config.siteRepoOwner || !config.websiteRepoName) {
+                    console.warn(`Invalid config.json in ${owner}/${repoName} (missing required fields), skipping...`);
+                    return null;
+                }
+
+                return {
+                    name: config.siteTitle,
+                    thumbnail: `https://raw.githubusercontent.com/${config.siteRepoOwner}/${config.websiteRepoName}/main/${config.thumbnailPath || 'thumbnail.jpg'}`,
+                    url: `https://${config.siteRepoOwner}.github.io/${config.websiteRepoName}`,
+                    owner: owner,
+                    repo: repoName
+                };
+            } catch (error) {
+                console.warn(`Skipping ${owner}/${repoName}: ${error.message}`);
+                return null;
+            }
+        }));
+
+        allSites = allSites.filter(site => site !== null);
+        if (allSites.length === 0) {
+            showNotification('No valid GLB sites found. Fork Clone.Tools to get started!', true);
+        }
+        renderGrid();
+    } catch (error) {
+        showNotification(`Error loading sites: ${error.message}`, true);
+    }
+}
 
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');
@@ -20,6 +74,29 @@ function showNotification(message, isError = false) {
     }, 5000);
 }
 
+function renderGrid() {
+    grid.innerHTML = '';
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredSites = allSites.filter(site => 
+        site.name.toLowerCase().includes(searchTerm) || 
+        site.owner.toLowerCase().includes(searchTerm) || 
+        site.repo.toLowerCase().includes(searchTerm)
+    );
+
+    filteredSites.forEach(site => {
+        const box = document.createElement('div');
+        box.className = 'grid-box';
+        box.innerHTML = `
+            <img src="${site.thumbnail}" alt="${site.name}" onerror="this.src='default-thumbnail.jpg'">
+            <div class="text-row">
+                <div class="name">${site.name}</div>
+            </div>
+        `;
+        box.addEventListener('click', () => window.open(site.url, '_blank'));
+        grid.appendChild(box);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await auth.checkSession(async (user) => {
@@ -27,22 +104,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.log('Logged in as:', user);
                 auth.updateLoginDisplay(user, loginBtn);
                 profileDropdown.style.display = 'none';
-                letsCreateLink.style.display = 'none';
+                letsCreateLink.style.display = 'block'; // Always visible
             } else {
                 console.log('Not logged in');
                 loginBtn.innerHTML = 'Login with GitHub';
                 loginBtn.classList.remove('profile');
                 loginBtn.disabled = false;
                 profileDropdown.style.display = 'none';
-                letsCreateLink.style.display = 'block';
+                letsCreateLink.style.display = 'block'; // Always visible
             }
         });
         console.log('Auth setup complete');
-        // Uncomment loadSites() once login works
-        // loadSites();
+        loadSites();
     } catch (error) {
         console.error('Auth error:', error);
         showNotification(`Login setup failed: ${error.message}`, true);
+        loadSites();
     }
 
     loginBtn.addEventListener('click', async () => {
@@ -76,4 +153,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             dropdownVisible = false;
         }
     });
+
+    searchInput.addEventListener('input', renderGrid);
 });
