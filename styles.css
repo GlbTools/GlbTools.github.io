@@ -1224,3 +1224,17 @@ footer a:hover {
 #pages-status.complete {
     color: #44ff44; /* Green for complete */
 }
+
+#apply-oauth-btn {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Bungee', cursive;
+}
+
+#apply-oauth-btn:hover {
+    background: #e65a50;
+}

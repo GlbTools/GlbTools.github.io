@@ -15,6 +15,9 @@ const pagesLink = document.getElementById('pages-link');
 const pagesStatus = document.getElementById('pages-status');
 const liveSiteLink = document.getElementById('live-site-link');
 const portalLink = document.getElementById('portal-link');
+const applyOauthBtn = document.getElementById('apply-oauth-btn');
+const clientIdInput = document.getElementById('client-id');
+const clientSecretInput = document.getElementById('client-secret');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
@@ -131,7 +134,7 @@ async function createGlbRepo(repoName) {
         pagesLink.textContent = 'Click here';
 
         enableStep5();
-        checkPagesStatus(username, forkedRepoName); // Start checking Pages status immediately
+        checkPagesStatus(username, forkedRepoName);
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
@@ -139,12 +142,12 @@ async function createGlbRepo(repoName) {
     }
 }
 
-async function saveConfig(username, glbRepoName) {
+async function saveConfig(username, glbRepoName, clientId = "YOUR_SUPABASE_URL_HERE", clientSecret = "YOUR_SUPABASE_ANON_KEY_HERE") {
     const config = {
         glbRepoUsername: username,
         glbRepoName: glbRepoName,
-        supabaseUrl: "YOUR_SUPABASE_URL_HERE",
-        supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY_HERE",
+        supabaseUrl: clientId,
+        supabaseAnonKey: clientSecret,
         siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
@@ -168,7 +171,7 @@ async function saveConfig(username, glbRepoName) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            message: 'Initialize config.json',
+            message: 'Update config.json with OAuth credentials',
             content: content,
             sha: sha
         })
@@ -212,6 +215,25 @@ async function checkPagesStatus(username, repoName) {
     }, 6000);
 }
 
+async function applyOAuth() {
+    const clientId = clientIdInput.value.trim();
+    const clientSecret = clientSecretInput.value.trim();
+
+    if (!clientId || !clientSecret) {
+        showNotification('Please enter both Client ID and Client Secret.', true);
+        return;
+    }
+
+    try {
+        const username = await getUsername();
+        showNotification('Applying OAuth credentials...');
+        await saveConfig(username, glbRepoName, clientId, clientSecret);
+        showNotification('OAuth credentials applied successfully! Your site is ready.');
+    } catch (error) {
+        showNotification(`Error applying OAuth: ${error.message}`, true);
+    }
+}
+
 function enableStep3() {
     document.getElementById('step-3').style.opacity = '1';
     document.getElementById('step-3').style.pointerEvents = 'auto';
@@ -220,15 +242,17 @@ function enableStep3() {
 function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
-    document.getElementById('step-6').style.opacity = '1'; // Enable Step 6 with Step 5
+    document.getElementById('step-6').style.opacity = '1';
     document.getElementById('step-6').style.pointerEvents = 'auto';
 }
 
 function enableNextSteps() {
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
-    document.getElementById('step-8').style.opacity = '1'; // Add this line
-    document.getElementById('step-8').style.pointerEvents = 'auto'; // Add this line
+    document.getElementById('step-8').style.opacity = '1';
+    document.getElementById('step-8').style.pointerEvents = 'auto';
+    document.getElementById('step-9').style.opacity = '1';
+    document.getElementById('step-9').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -291,4 +315,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         await createGlbRepo(repoName);
     });
+
+    applyOauthBtn.addEventListener('click', applyOAuth);
 });
