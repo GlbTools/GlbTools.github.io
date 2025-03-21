@@ -11,7 +11,6 @@ const forkStatus = document.getElementById('fork-status');
 const glbRepoNameInput = document.getElementById('glb-repo-name');
 const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
 const glbRepoStatus = document.getElementById('glb-repo-status');
-const pagesLink = document.getElementById('pages-link');
 const liveSiteLink = document.getElementById('live-site-link');
 const portalUploadLink = document.getElementById('portal-upload-link');
 const portalShareLink = document.getElementById('portal-share-link');
@@ -106,27 +105,43 @@ async function checkForkStatus(username, repoName) {
 async function createGlbRepo(repoName) {
     try {
         const username = await getUsername();
-        const normalizedName = normalizeRepoName(repoName);
+        const normalizedGlbName = normalizeRepoName(repoName);
         glbRepoStatus.textContent = 'Creating...';
         glbRepoStatus.className = 'pending';
-        const response = await fetch('https://api.github.com/user/repos', {
+
+        // Create GLB repo
+        const glbResponse = await fetch('https://api.github.com/user/repos', {
             method: 'POST',
             headers: {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: normalizedName, private: false })
+            body: JSON.stringify({ name: normalizedGlbName, private: false })
         });
-        if (!response.ok) throw new Error('Failed to create GLB repo');
+        if (!glbResponse.ok) throw new Error('Failed to create GLB repo');
+
+        glbRepoName = normalizedGlbName;
+        showNotification(`GLB repo ${normalizedGlbName} created! Setting up config...`);
+        await saveConfig(username, normalizedGlbName);
+
+        // Commit .nojekyll to trigger Pages
+        const nojekyllContent = btoa(''); // Empty file
+        await fetch(`https://api.github.com/repos/${username}/${forkedRepoName}/contents/.nojekyll`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${auth.getToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'Enable GitHub Pages with .nojekyll',
+                content: nojekyllContent
+            })
+        });
+
         glbRepoStatus.textContent = 'Repo Created';
         glbRepoStatus.className = 'complete';
-        glbRepoName = normalizedName;
-        showNotification(`GLB repo ${normalizedName} created! Setting up config...`);
-        await saveConfig(username, normalizedName);
 
         // Update links
-        pagesLink.href = `https://github.com/${username}/${forkedRepoName}/settings/pages`;
-        pagesLink.textContent = 'Click here';
         const liveUrl = `https://${username}.github.io/${forkedRepoName}/`;
         liveSiteLink.href = liveUrl;
         checkLiveSite(liveUrl);
@@ -147,8 +162,8 @@ async function saveConfig(username, glbRepoName) {
     const config = {
         glbRepoUsername: username,
         glbRepoName: glbRepoName,
-        supabaseUrl: "https://dpvdliyswsijfeoppkhs.supabase.co",
-        supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwdmRsaXlzd3NpamZlb3Bwa2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MjM2NjEsImV4cCI6MjA1ODA5OTY2MX0.oDmNRb-rIuGaWVlRG68IaLVKtPxoNF0_TIwhdP6vIY4",
+        supabaseUrl: "", // Placeholder—user must set this later
+        supabaseAnonKey: "", // Placeholder—user must set this later
         siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
