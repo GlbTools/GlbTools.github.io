@@ -227,6 +227,8 @@ function enableStep5() {
 function enableNextSteps() {
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
+    document.getElementById('step-8').style.opacity = '1'; // Add this line
+    document.getElementById('step-8').style.pointerEvents = 'auto'; // Add this line
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

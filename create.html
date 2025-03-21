@@ -63,23 +63,24 @@
                 </div>
                 <div class="step-box" id="step-7" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 7: Set Up Supabase</h3>
-                    <p><strong>Step 1:</strong> Go to Supabase (<a href="https://supabase.com/dashboard/" target="_blank">https://supabase.com/dashboard/</a>)</p>
+                    <p><strong>Step 1:</strong> Go to <a href="https://supabase.com/dashboard/" target="_blank">Supabase</a>.</p>
                     <p><strong>Step 2:</strong> Sign in with GitHub and authorize the Supabase app.</p>
-                    <p><strong>Step 3:</strong> Create a new organization (<a href="https://supabase.com/dashboard/new" target="_blank">https://supabase.com/dashboard/new</a>). You can call it anything you want.</p>
-                    <p><strong>Step 4:</strong> Create a new project. You can also call this anything you want.</p>
+                    <p><strong>Step 3:</strong> Create a <a href="https://supabase.com/dashboard/new" target="_blank">new organization</a>. Call it anything you want.</p>
+                    <p><strong>Step 4:</strong> Create a new project. Call this anything you want.</p>
                     <p><strong>Step 5:</strong> Within your Supabase project, navigate to > Authentication > URL Configuration. Change <code>http://localhost:3000</code> to your GitHub Pages website URL (e.g., <code>https://YOUR_USERNAME.github.io/YOUR_REPO/</code>).</p>
                     <p><strong>Step 6:</strong> Within your Supabase project, navigate to > Authentication > Sign In / Up. Scroll down, find GitHub, and enable it. Leave this page open and continue to Step 8.</p>
-                    <p><strong>Step 8: Set Up GitHub OAuth</strong></p>
-                    <p>8.1: Go to GitHub Settings > Developer Settings > OAuth Apps > New OAuth App.</p>
-                    <p>8.2: Fill in:
-                        <ul>
-                            <li><strong>Application Name:</strong> Anything you want (e.g., "My GLB Site Auth").</li>
-                            <li><strong>Homepage URL:</strong> Your GitHub Pages URL (e.g., <code>https://YOUR_USERNAME.github.io/YOUR_REPO/</code>).</li>
-                            <li><strong>Authorization Callback URL:</strong> Your GitHub Pages URL with <code>/auth/callback</code> (e.g., <code>https://YOUR_USERNAME.github.io/YOUR_REPO/auth/callback</code>).</li>
-                        </ul>
-                    </p>
-                    <p>8.3: Click "Register application," then "Generate a new client secret." Copy the Client ID and Secret.</p>
-                    <p>8.4: Return to Supabase > Authentication > Providers > GitHub. Enable GitHub, paste the Client ID and Secret, and save.</p>
+                </div>
+                <div class="step-box" id="step-8" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 8: Set Up GitHub OAuth</h3>
+                    <p><strong>Step 1:</strong> Go to <a href="https://github.com/settings/developers" target="_blank">GitHub</a> to create a New OAuth App.</p>
+                    <p><strong>Step 2:</strong> Fill in:</p>
+                    <ul>
+                        <li><strong>Application Name:</strong> Anything you want.</li>
+                        <li><strong>Homepage URL:</strong> Your GitHub Pages URL (e.g., <code>https://YOUR_USERNAME.github.io/YOUR_REPO/</code>).</li>
+                        <li><strong>Authorization Callback URL:</strong> Copy this from Supabase (Callback URL (for OAuth)).</li>
+                    </ul>
+                    <p><strong>Step 3:</strong> Click "Register application," then "Generate a new client secret." Copy the Client ID and Secret.</p>
+                    <p><strong>Step 4:</strong> Return to Supabase > Authentication > Providers > GitHub. Paste the Client ID and Secret, and save.</p>
                     <p>After completing these steps, update your <code>config.json</code> with your Supabase project’s URL and Anon Key (found in Supabase > Settings > API), then visit <a id="portal-link" href="#" target="_blank">your portal</a> to upload models and share your site.</p>
                 </div>
             </div>
