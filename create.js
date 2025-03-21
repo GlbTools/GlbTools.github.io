@@ -20,7 +20,6 @@ const saveConfigBtn = document.getElementById('save-config-btn');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
-let username = null;
 
 function showNotification(message, isError = false) {
     const notification = document.createElement('div');
@@ -41,6 +40,12 @@ function normalizeRepoName(name) {
 }
 
 async function forkRepo(newName) {
+    const user = auth.getUser();
+    if (!user || !auth.getToken()) {
+        showNotification('Please log in first.', true);
+        return;
+    }
+    const username = user.login;
     const normalizedName = normalizeRepoName(newName);
     try {
         forkStatus.textContent = 'Forking...';
@@ -56,7 +61,7 @@ async function forkRepo(newName) {
         if (!response.ok) throw new Error('Failed to start fork');
         showNotification('Fork started! Waiting for it to complete...');
         forkedRepoName = normalizedName;
-        checkForkStatus(normalizedName);
+        checkForkStatus(username, normalizedName);
     } catch (error) {
         forkStatus.textContent = `Error: ${error.message}`;
         forkStatus.className = 'error';
@@ -64,7 +69,7 @@ async function forkRepo(newName) {
     }
 }
 
-async function checkForkStatus(repoName) {
+async function checkForkStatus(username, repoName) {
     const maxAttempts = 20;
     let attempts = 0;
 
@@ -79,7 +84,7 @@ async function checkForkStatus(repoName) {
                 forkStatus.className = 'complete';
                 clearInterval(interval);
                 enableStep3();
-                populateStep5();
+                populateStep5(username);
             } else if (attempts >= maxAttempts) {
                 forkStatus.textContent = 'Error: Fork timed out';
                 forkStatus.className = 'error';
@@ -117,6 +122,12 @@ function enableNextSteps() {
 }
 
 async function createGlbRepo(repoName) {
+    const user = auth.getUser();
+    if (!user || !auth.getToken()) {
+        showNotification('Please log in first.', true);
+        return;
+    }
+    const username = user.login;
     const normalizedName = normalizeRepoName(repoName);
     try {
         glbRepoStatus.textContent = 'Creating...';
@@ -142,13 +153,19 @@ async function createGlbRepo(repoName) {
     }
 }
 
-async function populateStep5() {
+async function populateStep5(username) {
     siteRepoOwnerInput.value = username;
     siteRepoNameInput.value = forkedRepoName;
     siteTitleInput.value = forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 async function saveConfig() {
+    const user = auth.getUser();
+    if (!user || !auth.getToken()) {
+        showNotification('Please log in first.', true);
+        return;
+    }
+    const username = user.login;
     const config = {
         glbRepoUsername: username,
         glbRepoName: glbRepoName,
@@ -159,6 +176,11 @@ async function saveConfig() {
         siteRepoOwner: username,
         siteRepoName: forkedRepoName
     };
+
+    if (!glbRepoName) {
+        showNotification('Please create a GLB repo first.', true);
+        return;
+    }
 
     try {
         const thumbnailFile = thumbnailFileInput.files[0];
@@ -259,25 +281,12 @@ function setupDragAndDrop(input, dropZone) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    forkRepoBtn.disabled = true; // Disable until logged in
+    // No need to disable button here—it’s enabled by default and checked in the listener
     await auth.checkSession(async (user) => {
         if (user && auth.getToken()) {
-            username = user.login;
-            console.log('Username set to:', username); // Debug log
             auth.updateLoginDisplay(user, loginBtn);
             createSection.style.display = 'block';
             loginMessage.style.display = 'none';
-            forkRepoBtn.disabled = false;
-
-            // Move listener inside callback to ensure username is set
-            forkRepoBtn.addEventListener('click', () => {
-                const repoName = repoNameInput.value.trim();
-                if (!repoName) {
-                    showNotification('Please enter a repo name.', true);
-                    return;
-                }
-                forkRepo(repoName);
-            });
         } else {
             loginBtn.innerHTML = 'Login with GitHub';
             loginBtn.classList.remove('profile');
@@ -306,7 +315,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         dropdownVisible = false;
         createSection.style.display = 'none';
         loginMessage.style.display = 'block';
-        forkRepoBtn.disabled = true;
     });
 
     document.addEventListener('click', (e) => {
@@ -314,6 +322,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             profileDropdown.style.display = 'none';
             dropdownVisible = false;
         }
+    });
+
+    forkRepoBtn.addEventListener('click', () => {
+        const repoName = repoNameInput.value.trim();
+        if (!repoName) {
+            showNotification('Please enter a repo name.', true);
+            return;
+        }
+        forkRepo(repoName);
     });
 
     createGlbRepoBtn.addEventListener('click', () => {
