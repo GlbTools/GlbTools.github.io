@@ -131,6 +131,7 @@ async function createGlbRepo(repoName) {
         pagesLink.textContent = 'Click here';
 
         enableStep5();
+        checkPagesStatus(username, forkedRepoName); // Start checking Pages status immediately
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
@@ -219,11 +220,11 @@ function enableStep3() {
 function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
+    document.getElementById('step-6').style.opacity = '1'; // Enable Step 6 with Step 5
+    document.getElementById('step-6').style.pointerEvents = 'auto';
 }
 
 function enableNextSteps() {
-    document.getElementById('step-6').style.opacity = '1';
-    document.getElementById('step-6').style.pointerEvents = 'auto';
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
 }
@@ -287,7 +288,5 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         await createGlbRepo(repoName);
-        const username = await getUsername();
-        checkPagesStatus(username, forkedRepoName); // Start checking Pages status
     });
 });

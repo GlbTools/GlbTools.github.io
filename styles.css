@@ -1220,3 +1220,7 @@ footer a:hover {
 #glb-repo-status.error {
     color: #ff4444;
 }
+
+#pages-status.complete {
+    color: #44ff44; /* Green for complete */
+}
