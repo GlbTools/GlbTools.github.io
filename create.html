@@ -15,7 +15,6 @@
             <div class="profile-container">
                 <button id="login-btn">Login with GitHub</button>
                 <div class="dropdown" id="profile-dropdown" style="display: none;">
-                    <a href="create.html" class="dropdown-item" id="create-link">Let’s Create</a>
                     <button class="dropdown-item" id="logout-btn">Logout</button>
                 </div>
             </div>
@@ -28,21 +27,31 @@
             <div id="create-section" class="section-box" style="display: none;">
                 <h2>Step-by-Step Guide</h2>
                 <div class="guide">
-                    <h3>1. Fork Clone.Tools</h3>
-                    <p>Visit <a href="https://github.com/your-org/clone.tools" target="_blank">Clone.Tools on GitHub</a> and click "Fork" to create your own copy.</p>
-                    <h3>2. Name Your Site</h3>
-                    <div class="form-row">
-                        <label for="repo-name">Your Site Repo Name:</label>
-                        <input type="text" id="repo-name" placeholder="e.g., rock.tools">
-                        <button id="create-repo-btn">Create Repo</button>
+                    <div class="step-box">
+                        <h3>Step 1: Fork Clone.Tools</h3>
+                        <p>Visit <a href="https://github.com/beb-cc0/beb-cc0.github.io" target="_blank">this link</a> and click "Fork" to create your own copy.</p>
                     </div>
-                    <p>Enter a name for your site above. Click "Create Repo" to set it up automatically, or manually rename your fork on GitHub.</p>
-                    <h3>3. Configure Your Site</h3>
-                    <p>Edit <code>config.json</code> in your repo with your site title, thumbnail path, and repo details. Upload a <code>thumbnail.jpg</code> (800x450px, max 100KB) to your repo root.</p>
-                    <h3>4. Enable GitHub Pages</h3>
-                    <p>Go to your repo’s Settings > Pages, set the source to the <code>main</code> branch, and save. Your site will be live at <code>https://yourusername.github.io/your-repo-name</code>.</p>
-                    <h3>5. Share Your Creation</h3>
-                    <p>Once set up, your site will appear on GLB.TOOLS automatically (if tagged with <code>glbtools</code>). Share it with the world!</p>
+                    <div class="step-box">
+                        <h3>Step 2: Name Your Site</h3>
+                        <div class="form-row">
+                            <label for="repo-name">Your Site Repo Name:</label>
+                            <input type="text" id="repo-name" placeholder="e.g., rock.tools">
+                            <button id="create-repo-btn">Create Repo</button>
+                        </div>
+                        <p>Enter a name for your site above. Click "Create Repo" to set it up automatically.</p>
+                    </div>
+                    <div class="step-box">
+                        <h3>Step 3: Configure Your Site</h3>
+                        <p>Use "My Portal" in the dropdown profile on your new website to configure it—it’s easier and built for this purpose.</p>
+                    </div>
+                    <div class="step-box">
+                        <h3>Step 4: Enable GitHub Pages</h3>
+                        <p>Go to your repo’s Settings > Pages, set the source to the <code>main</code> branch, and save.</p>
+                    </div>
+                    <div class="step-box">
+                        <h3>Step 5: Share Your Creation</h3>
+                        <p>Once set up, select "Go Public" in My Portal to allow GLB.TOOLS to find your website.</p>
+                    </div>
                 </div>
             </div>
         </div>
