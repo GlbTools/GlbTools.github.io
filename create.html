@@ -84,14 +84,16 @@
                 </div>
                 <div class="step-box" id="step-9" style="opacity: 0.5; pointer-events: none;">
                     <h3>Step 9: Apply OAuth to Website</h3>
-                    <p>Paste your Client ID and Client Secret below, then click Apply to update your site’s configuration.</p>
+                    <p><strong>Step 1:</strong> On Supabase, go to Project Settings > Data API.</p>
+                    <p><strong>Step 2:</strong> Copy and paste the Project URL and anon public Project API Key in the boxes below.</p>
+                    <p><strong>Step 3:</strong> Click Apply to update your site’s OAuth.</p>
                     <div class="form-row">
-                        <label for="client-id">Client ID:</label>
-                        <input type="text" id="client-id" placeholder="Paste Client ID here">
+                        <label for="project-url">Project URL:</label>
+                        <input type="text" id="project-url" placeholder="e.g., https://oazzeahrxazcdyihwvnz.supabase.co">
                     </div>
                     <div class="form-row">
-                        <label for="client-secret">Client Secret:</label>
-                        <input type="text" id="client-secret" placeholder="Paste Client Secret here">
+                        <label for="project-api-key">Project API Key:</label>
+                        <input type="text" id="project-api-key" placeholder="e.g., eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9henplYWhyeGF6Y2R5aWh3dm56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1OTQyMzcsImV4cCI6MjA1ODE3MDIzN30.AsRUeMeyJJc4lsDpZM-SB4-NTIK9eLTRx9ADnsI1--Y">
                     </div>
                     <button id="apply-oauth-btn" class="full-width">Apply</button>
                 </div>

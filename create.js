@@ -16,8 +16,8 @@ const pagesStatus = document.getElementById('pages-status');
 const liveSiteLink = document.getElementById('live-site-link');
 const portalLink = document.getElementById('portal-link');
 const applyOauthBtn = document.getElementById('apply-oauth-btn');
-const clientIdInput = document.getElementById('client-id');
-const clientSecretInput = document.getElementById('client-secret');
+const projectUrlInput = document.getElementById('project-url');
+const projectApiKeyInput = document.getElementById('project-api-key');
 let dropdownVisible = false;
 let forkedRepoName = null;
 let glbRepoName = null;
@@ -142,12 +142,12 @@ async function createGlbRepo(repoName) {
     }
 }
 
-async function saveConfig(username, glbRepoName, clientId = "YOUR_SUPABASE_URL_HERE", clientSecret = "YOUR_SUPABASE_ANON_KEY_HERE") {
+async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL_HERE", projectApiKey = "YOUR_SUPABASE_ANON_KEY_HERE") {
     const config = {
         glbRepoUsername: username,
         glbRepoName: glbRepoName,
-        supabaseUrl: clientId,
-        supabaseAnonKey: clientSecret,
+        supabaseUrl: projectUrl,
+        supabaseAnonKey: projectApiKey,
         siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
@@ -171,7 +171,7 @@ async function saveConfig(username, glbRepoName, clientId = "YOUR_SUPABASE_URL_H
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            message: 'Update config.json with OAuth credentials',
+            message: 'Update config.json with Supabase credentials',
             content: content,
             sha: sha
         })
@@ -216,21 +216,21 @@ async function checkPagesStatus(username, repoName) {
 }
 
 async function applyOAuth() {
-    const clientId = clientIdInput.value.trim();
-    const clientSecret = clientSecretInput.value.trim();
+    const projectUrl = projectUrlInput.value.trim();
+    const projectApiKey = projectApiKeyInput.value.trim();
 
-    if (!clientId || !clientSecret) {
-        showNotification('Please enter both Client ID and Client Secret.', true);
+    if (!projectUrl || !projectApiKey) {
+        showNotification('Please enter both Project URL and Project API Key.', true);
         return;
     }
 
     try {
         const username = await getUsername();
-        showNotification('Applying OAuth credentials...');
-        await saveConfig(username, glbRepoName, clientId, clientSecret);
-        showNotification('OAuth credentials applied successfully! Your site is ready.');
+        showNotification('Applying Supabase credentials...');
+        await saveConfig(username, glbRepoName, projectUrl, projectApiKey);
+        showNotification('Supabase credentials applied successfully! Your site is ready.');
     } catch (error) {
-        showNotification(`Error applying OAuth: ${error.message}`, true);
+        showNotification(`Error applying Supabase credentials: ${error.message}`, true);
     }
 }
 
