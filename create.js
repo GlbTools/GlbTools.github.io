@@ -8,7 +8,6 @@ const createSection = document.getElementById('create-section');
 const cloneWebsiteBtn = document.getElementById('clone-website-btn');
 const websiteStatus = document.getElementById('website-status');
 const glbRepoStatus = document.getElementById('glb-repo-status');
-const pagesLink = document.getElementById('pages-link');
 const pagesStatus = document.getElementById('pages-status');
 const liveSiteLink = document.getElementById('live-site-link');
 const portalLink = document.getElementById('portal-link');
@@ -83,7 +82,15 @@ async function cloneWebsite() {
         glbRepoName = glbRepoNameLocal;
 
         showNotification(`Website cloned as ${websiteRepoName} and GLB repo created as ${glbRepoName}! Checking status...`);
+        
+        // Enable Steps 4 and 5 immediately
+        document.getElementById('step-4').style.opacity = '1';
+        document.getElementById('step-4').style.pointerEvents = 'auto';
+        document.getElementById('step-5').style.opacity = '1';
+        document.getElementById('step-5').style.pointerEvents = 'auto';
+
         checkSetupStatus(username, websiteRepoName, glbRepoNameLocal);
+        checkPagesStatus(username);
     } catch (error) {
         websiteStatus.textContent = `Error: ${error.message}`;
         websiteStatus.className = 'error';
@@ -127,11 +134,10 @@ async function checkSetupStatus(username, websiteRepoName, glbRepoName) {
                 glbRepoStatus.className = 'error';
             }
 
-            // If both are complete, proceed and save config
+            // If both are complete, save config
             if (websiteStatus.textContent === 'Website Ready' && glbRepoStatus.textContent === 'GLB Repo Ready') {
                 clearInterval(interval);
                 await saveConfig(username, glbRepoName);
-                enableStep5();
             } else if (websiteAttempts >= maxAttempts && glbAttempts >= maxAttempts) {
                 clearInterval(interval);
                 showNotification('Setup took too long—check your GitHub repos.', true);
@@ -204,14 +210,14 @@ async function checkPagesStatus(username) {
                 clearInterval(interval);
                 enableNextSteps();
             } else if (attempts >= maxAttempts) {
-                pagesStatus.textContent = 'Not live yet—ensure Pages is enabled';
+                pagesStatus.textContent = 'Not live yet—check your repo settings';
                 pagesStatus.className = 'error';
                 liveSiteLink.textContent = `${liveUrl} (not live yet)`;
                 clearInterval(interval);
             }
         } catch (error) {
             if (attempts >= maxAttempts) {
-                pagesStatus.textContent = 'Not live yet—ensure Pages is enabled';
+                pagesStatus.textContent = 'Not live yet—check your repo settings';
                 pagesStatus.className = 'error';
                 liveSiteLink.textContent = `${liveUrl} (not live yet)`;
                 clearInterval(interval);
@@ -220,22 +226,41 @@ async function checkPagesStatus(username) {
     }, 6000);
 }
 
+async function applyOAuth() {
+    const projectUrl = projectUrlInput.value.trim();
+    const projectApiKey = projectApiKeyInput.value.trim();
+
+    if (!projectUrl || !projectApiKey) {
+        showNotification('Please enter both Project URL and Project API Key.', true);
+        return;
+    }
+
+    try {
+        const username = await getUsername();
+        showNotification('Applying Supabase credentials...');
+        await saveConfig(username, glbRepoName, projectUrl, projectApiKey);
+        showNotification('Supabase credentials applied successfully! Your site is ready.');
+    } catch (error) {
+        showNotification(`Error applying Supabase credentials: ${error.message}`, true);
+    }
+}
+
 function enableStep5() {
+    document.getElementById('step-4').style.opacity = '1';
+    document.getElementById('step-4').style.pointerEvents = 'auto';
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
-    document.getElementById('step-6').style.opacity = '1';
-    document.getElementById('step-6').style.pointerEvents = 'auto';
 }
 
 function enableNextSteps() {
+    document.getElementById('step-6').style.opacity = '1';
+    document.getElementById('step-6').style.pointerEvents = 'auto';
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
     document.getElementById('step-8').style.opacity = '1';
     document.getElementById('step-8').style.pointerEvents = 'auto';
     document.getElementById('step-9').style.opacity = '1';
     document.getElementById('step-9').style.pointerEvents = 'auto';
-    document.getElementById('step-10').style.opacity = '1';
-    document.getElementById('step-10').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

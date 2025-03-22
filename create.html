@@ -47,37 +47,33 @@
                     <p>GLB Repo Status: <span id="glb-repo-status">Waiting to start...</span></p>
                 </div>
                 <div class="step-box" id="step-5" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 5: Enable GitHub Pages</h3>
-                    <p><a id="pages-link" href="#" target="_blank">Click here</a> to go to your new repo's GitHub Pages setup, set Branch to main and Save.</p>
-                </div>
-                <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 6: Check GitHub Pages Status</h3>
+                    <h3>Step 5: Check GitHub Pages Status</h3>
                     <p>Status: <span id="pages-status">Waiting</span></p>
                     <p>Your site will be live at: <a id="live-site-link" href="#" target="_blank">Checking...</a></p>
                 </div>
-                <div class="step-box" id="step-7" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 7: Set Up Supabase (its free)</h3>
+                <div class="step-box" id="step-6" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 6: Set Up Supabase (its free)</h3>
                     <p><strong>Step 1:</strong> Go to <a href="https://supabase.com/dashboard/" target="_blank">Supabase</a>. We need this to enable logins.</p>
                     <p><strong>Step 2:</strong> Sign in with GitHub and authorize the Supabase app.</p>
                     <p><strong>Step 3:</strong> Create a <a href="https://supabase.com/dashboard/new" target="_blank">new organization</a>. Call it anything you want.</p>
                     <p><strong>Step 4:</strong> Create a new project. Call this anything you want.</p>
-                    <p><strong>Step 5:</strong> Within your Supabase project, navigate to > Authentication > URL Configuration. Change <code>http://localhost:3000</code> to your GitHub Pages website URL (its in Step 6 above).</p>
-                    <p><strong>Step 6:</strong> Within your Supabase project, navigate to > Authentication > Sign In / Up. Scroll down, find GitHub, and enable it. Leave this page open and continue to Step 8.</p>
+                    <p><strong>Step 5:</strong> Within your Supabase project, navigate to > Authentication > URL Configuration. Change <code>http://localhost:3000</code> to your GitHub Pages website URL (its in Step 5 above).</p>
+                    <p><strong>Step 6:</strong> Within your Supabase project, navigate to > Authentication > Sign In / Up. Scroll down, find GitHub, and enable it. Leave this page open and continue to Step 7.</p>
                 </div>
-                <div class="step-box" id="step-8" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 8: Set Up GitHub OAuth</h3>
+                <div class="step-box" id="step-7" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 7: Set Up GitHub OAuth</h3>
                     <p><strong>Step 1:</strong> Go to <a href="https://github.com/settings/developers" target="_blank">GitHub</a> Developers Setting to create a New OAuth App.</p>
                     <p><strong>Step 2:</strong> Fill in:</p>
                     <ul>
                         <li><strong>Application Name:</strong> Anything you want.</li>
-                        <li><strong>Homepage URL:</strong> Your GitHub Pages URL (its in Step 6 above).</li>
+                        <li><strong>Homepage URL:</strong> Your GitHub Pages URL (its in Step 5 above).</li>
                         <li><strong>Authorization Callback URL:</strong> Copy this from Supabase Callback URL (for OAuth).</li>
                     </ul>
                     <p><strong>Step 3:</strong> Click "Register application," then "Generate a new client secret." Copy the Client ID and Client Secret.</p>
                     <p><strong>Step 4:</strong> Return to Supabase > Authentication > Providers > GitHub. Paste the Client ID and Secret, and save.</p>
                 </div>
-                <div class="step-box" id="step-9" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 9: Apply OAuth to Website</h3>
+                <div class="step-box" id="step-8" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 8: Apply OAuth to Website</h3>
                     <p><strong>Step 1:</strong> On Supabase, go to Project Settings > Data API.</p>
                     <p><strong>Step 2:</strong> Copy and paste the Project URL and anon public Project API Key in the boxes below.</p>
                     <p><strong>Step 3:</strong> Click Apply to update your site’s OAuth.</p>
@@ -91,8 +87,8 @@
                     </div>
                     <button id="apply-oauth-btn" class="full-width">Apply</button>
                 </div>
-                <div class="step-box" id="step-10" style="opacity: 0.5; pointer-events: none;">
-                    <h3>Step 10: Upload Your Models</h3>
+                <div class="step-box" id="step-9" style="opacity: 0.5; pointer-events: none;">
+                    <h3>Step 9: Upload Your Models</h3>
                     <p>Once applied, visit <a id="portal-link" href="#" target="_blank">your portal</a> to upload models and click on publish to share it with glb.tools.</p>
                 </div>
             </div>
