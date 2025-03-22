@@ -1128,7 +1128,7 @@ footer a:hover {
     background: #e65a50;
 }
 
-#fork-repo-btn {
+#clone-website-btn {
     background: #ff6f61;
     color: white;
     border: none;
@@ -1138,7 +1138,7 @@ footer a:hover {
     font-family: 'Bungee', cursive;
 }
 
-#fork-repo-btn:hover {
+#clone-website-btn:hover {
     background: #e65a50;
 }
 
