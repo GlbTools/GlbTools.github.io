@@ -162,7 +162,7 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
         siteTitle: forkedRepoName.replace('.github.io', ''),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
-        websiteRepoName: forkedRepoName // Changed from siteRepoName to websiteRepoName
+        siteRepoName: forkedRepoName // Reverted to siteRepoName
     };
 
     const content = btoa(JSON.stringify(config, null, 2));

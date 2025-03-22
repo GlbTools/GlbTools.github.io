@@ -32,15 +32,15 @@ async function loadSites() {
                 const configText = await configResponse.text();
                 const config = JSON.parse(configText);
 
-                if (!config.siteTitle || !config.siteRepoOwner || !config.websiteRepoName) {
+                if (!config.siteTitle || !config.siteRepoOwner || !config.siteRepoName) { // Changed websiteRepoName to siteRepoName
                     console.warn(`Invalid config.json in ${owner}/${repoName} (missing required fields), skipping...`);
                     return null;
                 }
 
                 return {
                     name: config.siteTitle,
-                    thumbnail: `https://raw.githubusercontent.com/${config.siteRepoOwner}/${config.websiteRepoName}/main/${config.thumbnailPath || 'thumbnail.jpg'}`,
-                    url: `https://${config.siteRepoOwner}.github.io/${config.websiteRepoName}`,
+                    thumbnail: `https://raw.githubusercontent.com/${config.siteRepoOwner}/${config.siteRepoName}/main/${config.thumbnailPath || 'thumbnail.jpg'}`,
+                    url: `https://${config.siteRepoOwner}.github.io/${config.siteRepoName}`,
                     owner: owner,
                     repo: repoName
                 };
