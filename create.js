@@ -184,7 +184,7 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
     if (!response.ok) throw new Error('Failed to save config');
 }
 
-async function checkPagesStatus(username) { // Removed repoName parameter since it's always username.github.io
+async function checkPagesStatus(username) {
     const liveUrl = `https://${username}.github.io/`;
     liveSiteLink.href = liveUrl;
     portalLink.href = `${liveUrl}portal.html`;
@@ -220,31 +220,11 @@ async function checkPagesStatus(username) { // Removed repoName parameter since 
     }, 6000);
 }
 
-async function applyOAuth() {
-    const projectUrl = projectUrlInput.value.trim();
-    const projectApiKey = projectApiKeyInput.value.trim();
-
-    if (!projectUrl || !projectApiKey) {
-        showNotification('Please enter both Project URL and Project API Key.', true);
-        return;
-    }
-
-    try {
-        const username = await getUsername();
-        showNotification('Applying Supabase credentials...');
-        await saveConfig(username, glbRepoName, projectUrl, projectApiKey);
-        showNotification('Supabase credentials applied successfully! Your site is ready.');
-    } catch (error) {
-        showNotification(`Error applying Supabase credentials: ${error.message}`, true);
-    }
-}
-
 function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
     document.getElementById('step-6').style.opacity = '1';
     document.getElementById('step-6').style.pointerEvents = 'auto';
-    checkPagesStatus(await getUsername()); // Start checking Pages status immediately
 }
 
 function enableNextSteps() {
