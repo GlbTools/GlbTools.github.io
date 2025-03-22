@@ -10,18 +10,22 @@ let allSites = [];
 let dropdownVisible = false;
 
 async function loadSites() {
+    console.log('Starting loadSites()'); // Debug: Confirm function starts
     try {
+        console.log('Fetching repos from GitHub API...');
         const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools', {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
+        console.log('API response status:', response.status); // Debug: Log status
         if (!response.ok) throw new Error(`Failed to fetch repos: ${response.status}`);
         const data = await response.json();
-        const repos = data.items;
+        console.log('Repos found:', data.items.map(r => `${r.owner.login}/${r.name}`)); // Debug: Log all repos
 
         allSites = await Promise.all(repos.map(async repo => {
             const owner = repo.owner.login;
             const repoName = repo.name;
             const configUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/config.json`;
+            console.log(`Fetching config for ${owner}/${repoName}: ${configUrl}`); // Debug: Log config fetch
 
             try {
                 const configResponse = await fetch(configUrl);
@@ -32,7 +36,7 @@ async function loadSites() {
                 const configText = await configResponse.text();
                 const config = JSON.parse(configText);
 
-                if (!config.siteTitle || !config.siteRepoOwner || !config.siteRepoName) { // Changed websiteRepoName to siteRepoName
+                if (!config.siteTitle || !config.siteRepoOwner || !config.siteRepoName) {
                     console.warn(`Invalid config.json in ${owner}/${repoName} (missing required fields), skipping...`);
                     return null;
                 }
@@ -51,11 +55,13 @@ async function loadSites() {
         }));
 
         allSites = allSites.filter(site => site !== null);
+        console.log('Filtered sites:', allSites); // Debug: Log final sites
         if (allSites.length === 0) {
             showNotification('No valid GLB sites found. Fork Clone.Tools to get started!', true);
         }
         renderGrid();
     } catch (error) {
+        console.error('Error in loadSites:', error); // Debug: Log outer errors
         showNotification(`Error loading sites: ${error.message}`, true);
     }
 }
@@ -98,6 +104,7 @@ function renderGrid() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOMContentLoaded fired'); // Debug: Confirm event
     try {
         await auth.checkSession(async (user) => {
             if (user && auth.getToken()) {
@@ -115,11 +122,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         console.log('Auth setup complete');
-        loadSites();
+        await loadSites(); // Ensure this runs
     } catch (error) {
         console.error('Auth error:', error);
         showNotification(`Login setup failed: ${error.message}`, true);
-        loadSites();
+        await loadSites(); // Still try to load sites
     }
 
     loginBtn.addEventListener('click', async () => {
