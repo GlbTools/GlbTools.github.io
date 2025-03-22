@@ -6,7 +6,6 @@ const logoutBtn = document.getElementById('logout-btn');
 const loginMessage = document.getElementById('login-message');
 const createSection = document.getElementById('create-section');
 const forkRepoBtn = document.getElementById('fork-repo-btn');
-const repoNameInput = document.getElementById('repo-name');
 const forkStatus = document.getElementById('fork-status');
 const glbRepoNameInput = document.getElementById('glb-repo-name');
 const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
@@ -51,10 +50,10 @@ async function getUsername() {
     return userData.login;
 }
 
-async function forkRepo(newName) {
+async function forkRepo() {
     try {
         const username = await getUsername();
-        const normalizedName = normalizeRepoName(newName);
+        const repoName = `${username}.github.io`; // Force repo name to <username>.github.io
         forkStatus.textContent = 'Forking...';
         forkStatus.className = 'pending';
         const response = await fetch('https://api.github.com/repos/beb-cc0/beb-cc0.github.io/forks', {
@@ -63,12 +62,12 @@ async function forkRepo(newName) {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: normalizedName })
+            body: JSON.stringify({ name: repoName })
         });
         if (!response.ok) throw new Error('Failed to start fork');
-        showNotification('Fork started! Waiting for it to complete...');
-        forkedRepoName = normalizedName;
-        checkForkStatus(username, normalizedName);
+        showNotification(`Fork started as ${repoName}! Waiting for it to complete...`);
+        forkedRepoName = repoName;
+        checkForkStatus(username, repoName);
     } catch (error) {
         forkStatus.textContent = `Error: ${error.message}`;
         forkStatus.className = 'error';
@@ -90,7 +89,7 @@ async function checkForkStatus(username, repoName) {
                 forkStatus.textContent = 'Fork Complete';
                 forkStatus.className = 'complete';
                 clearInterval(interval);
-                enableStep3();
+                enableStep5();
             } else if (attempts >= maxAttempts) {
                 forkStatus.textContent = 'Error: Fork timed out';
                 forkStatus.className = 'error';
@@ -133,7 +132,7 @@ async function createGlbRepo(repoName) {
         pagesLink.href = `https://github.com/${username}/${forkedRepoName}/settings/pages`;
         pagesLink.textContent = 'Click here';
 
-        enableStep5();
+        enableStep7();
         checkPagesStatus(username, forkedRepoName);
     } catch (error) {
         glbRepoStatus.textContent = `Error: ${error.message}`;
@@ -180,7 +179,7 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
 }
 
 async function checkPagesStatus(username, repoName) {
-    const liveUrl = `https://${username}.github.io/${repoName}/`;
+    const liveUrl = `https://${username}.github.io/`; // Root URL since repo is <username>.github.io
     liveSiteLink.href = liveUrl;
     portalLink.href = `${liveUrl}portal.html`;
     portalLink.textContent = 'your portal';
@@ -234,27 +233,27 @@ async function applyOAuth() {
     }
 }
 
-function enableStep3() {
-    document.getElementById('step-3').style.opacity = '1';
-    document.getElementById('step-3').style.pointerEvents = 'auto';
-}
-
 function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
-    document.getElementById('step-6').style.opacity = '1';
-    document.getElementById('step-6').style.pointerEvents = 'auto';
 }
 
-function enableNextSteps() {
+function enableStep7() {
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
     document.getElementById('step-8').style.opacity = '1';
     document.getElementById('step-8').style.pointerEvents = 'auto';
+}
+
+function enableNextSteps() {
     document.getElementById('step-9').style.opacity = '1';
     document.getElementById('step-9').style.pointerEvents = 'auto';
     document.getElementById('step-10').style.opacity = '1';
     document.getElementById('step-10').style.pointerEvents = 'auto';
+    document.getElementById('step-11').style.opacity = '1';
+    document.getElementById('step-11').style.pointerEvents = 'auto';
+    document.getElementById('step-12').style.opacity = '1';
+    document.getElementById('step-12').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -301,12 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     forkRepoBtn.addEventListener('click', () => {
-        const repoName = repoNameInput.value.trim();
-        if (!repoName) {
-            showNotification('Please enter a repo name.', true);
-            return;
-        }
-        forkRepo(repoName);
+        forkRepo();
     });
 
     createGlbRepoBtn.addEventListener('click', async () => {
