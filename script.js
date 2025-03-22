@@ -10,22 +10,23 @@ let allSites = [];
 let dropdownVisible = false;
 
 async function loadSites() {
-    console.log('Starting loadSites()'); // Debug: Confirm function starts
+    console.log('Starting loadSites()');
     try {
         console.log('Fetching repos from GitHub API...');
         const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools', {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
-        console.log('API response status:', response.status); // Debug: Log status
+        console.log('API response status:', response.status);
         if (!response.ok) throw new Error(`Failed to fetch repos: ${response.status}`);
         const data = await response.json();
-        console.log('Repos found:', data.items.map(r => `${r.owner.login}/${r.name}`)); // Debug: Log all repos
+        const repos = data.items; // Define repos here
+        console.log('Repos found:', repos.map(r => `${r.owner.login}/${r.name}`));
 
         allSites = await Promise.all(repos.map(async repo => {
             const owner = repo.owner.login;
             const repoName = repo.name;
             const configUrl = `https://raw.githubusercontent.com/${owner}/${repoName}/main/config.json`;
-            console.log(`Fetching config for ${owner}/${repoName}: ${configUrl}`); // Debug: Log config fetch
+            console.log(`Fetching config for ${owner}/${repoName}: ${configUrl}`);
 
             try {
                 const configResponse = await fetch(configUrl);
@@ -55,13 +56,13 @@ async function loadSites() {
         }));
 
         allSites = allSites.filter(site => site !== null);
-        console.log('Filtered sites:', allSites); // Debug: Log final sites
+        console.log('Filtered sites:', allSites);
         if (allSites.length === 0) {
             showNotification('No valid GLB sites found. Fork Clone.Tools to get started!', true);
         }
         renderGrid();
     } catch (error) {
-        console.error('Error in loadSites:', error); // Debug: Log outer errors
+        console.error('Error in loadSites:', error);
         showNotification(`Error loading sites: ${error.message}`, true);
     }
 }
@@ -104,7 +105,7 @@ function renderGrid() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOMContentLoaded fired'); // Debug: Confirm event
+    console.log('DOMContentLoaded fired');
     try {
         await auth.checkSession(async (user) => {
             if (user && auth.getToken()) {
@@ -122,11 +123,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         console.log('Auth setup complete');
-        await loadSites(); // Ensure this runs
+        await loadSites();
     } catch (error) {
         console.error('Auth error:', error);
         showNotification(`Login setup failed: ${error.message}`, true);
-        await loadSites(); // Still try to load sites
+        await loadSites();
     }
 
     loginBtn.addEventListener('click', async () => {
