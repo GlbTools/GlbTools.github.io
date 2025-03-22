@@ -1225,6 +1225,11 @@ footer a:hover {
     color: #44ff44; /* Green for complete */
 }
 
+.full-width {
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding doesn’t overflow */
+}
+
 #apply-oauth-btn {
     background: #ff6f61;
     color: white;

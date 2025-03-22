@@ -253,6 +253,8 @@ function enableNextSteps() {
     document.getElementById('step-8').style.pointerEvents = 'auto';
     document.getElementById('step-9').style.opacity = '1';
     document.getElementById('step-9').style.pointerEvents = 'auto';
+    document.getElementById('step-10').style.opacity = '1';
+    document.getElementById('step-10').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
