@@ -13,13 +13,13 @@ async function loadSites() {
     console.log('Starting loadSites()');
     try {
         console.log('Fetching repos from GitHub API...');
-        const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools', {
+        const response = await fetch('https://api.github.com/search/repositories?q=topic:glbtools+fork:true', { // Added fork:true
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
         console.log('API response status:', response.status);
         if (!response.ok) throw new Error(`Failed to fetch repos: ${response.status}`);
         const data = await response.json();
-        const repos = data.items; // Define repos here
+        const repos = data.items;
         console.log('Repos found:', repos.map(r => `${r.owner.login}/${r.name}`));
 
         allSites = await Promise.all(repos.map(async repo => {
