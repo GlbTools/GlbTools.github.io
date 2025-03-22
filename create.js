@@ -159,10 +159,10 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
         glbRepoName: glbRepoName,
         supabaseUrl: projectUrl,
         supabaseAnonKey: projectApiKey,
-        siteTitle: forkedRepoName.replace('.github.io', ''), // Remove .github.io from siteTitle
+        siteTitle: forkedRepoName.replace('.github.io', ''),
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
-        siteRepoName: forkedRepoName
+        websiteRepoName: forkedRepoName // Changed from siteRepoName to websiteRepoName
     };
 
     const content = btoa(JSON.stringify(config, null, 2));
