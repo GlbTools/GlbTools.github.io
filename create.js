@@ -5,10 +5,8 @@ const profileDropdown = document.getElementById('profile-dropdown');
 const logoutBtn = document.getElementById('logout-btn');
 const loginMessage = document.getElementById('login-message');
 const createSection = document.getElementById('create-section');
-const forkRepoBtn = document.getElementById('fork-repo-btn');
-const forkStatus = document.getElementById('fork-status');
-const glbRepoNameInput = document.getElementById('glb-repo-name');
-const createGlbRepoBtn = document.getElementById('create-glb-repo-btn');
+const cloneWebsiteBtn = document.getElementById('clone-website-btn');
+const websiteStatus = document.getElementById('website-status');
 const glbRepoStatus = document.getElementById('glb-repo-status');
 const pagesLink = document.getElementById('pages-link');
 const pagesStatus = document.getElementById('pages-status');
@@ -50,95 +48,103 @@ async function getUsername() {
     return userData.login;
 }
 
-async function forkRepo() {
+async function cloneWebsite() {
     try {
         const username = await getUsername();
-        const repoName = `${username}.github.io`; // Force repo name to <username>.github.io
-        forkStatus.textContent = 'Forking...';
-        forkStatus.className = 'pending';
-        const response = await fetch('https://api.github.com/repos/beb-cc0/beb-cc0.github.io/forks', {
+        const websiteRepoName = `${username}.github.io`;
+        const glbRepoNameLocal = `${username}.glb`;
+
+        // Fork the website repo
+        websiteStatus.textContent = 'Cloning website...';
+        websiteStatus.className = 'pending';
+        const forkResponse = await fetch('https://api.github.com/repos/beb-cc0/beb-cc0.github.io/forks', {
             method: 'POST',
             headers: {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: repoName })
+            body: JSON.stringify({ name: websiteRepoName })
         });
-        if (!response.ok) throw new Error('Failed to start fork');
-        showNotification(`Fork started as ${repoName}! Waiting for it to complete...`);
-        forkedRepoName = repoName;
-        checkForkStatus(username, repoName);
-    } catch (error) {
-        forkStatus.textContent = `Error: ${error.message}`;
-        forkStatus.className = 'error';
-        showNotification(`Error forking repo: ${error.message}`, true);
-    }
-}
+        if (!forkResponse.ok) throw new Error('Failed to fork website repo');
+        forkedRepoName = websiteRepoName;
 
-async function checkForkStatus(username, repoName) {
-    const maxAttempts = 20;
-    let attempts = 0;
-
-    const interval = setInterval(async () => {
-        attempts++;
-        try {
-            const response = await fetch(`https://api.github.com/repos/${username}/${repoName}`, {
-                headers: { 'Authorization': `token ${auth.getToken()}` }
-            });
-            if (response.ok) {
-                forkStatus.textContent = 'Fork Complete';
-                forkStatus.className = 'complete';
-                clearInterval(interval);
-                enableStep5();
-            } else if (attempts >= maxAttempts) {
-                forkStatus.textContent = 'Error: Fork timed out';
-                forkStatus.className = 'error';
-                clearInterval(interval);
-                showNotification('Forking took too long—check your GitHub repos.', true);
-            }
-        } catch (error) {
-            forkStatus.textContent = `Error: ${error.message}`;
-            forkStatus.className = 'error';
-            clearInterval(interval);
-            showNotification(`Error checking fork status: ${error.message}`, true);
-        }
-    }, 6000);
-}
-
-async function createGlbRepo(repoName) {
-    try {
-        const username = await getUsername();
-        const normalizedGlbName = normalizeRepoName(repoName);
-        glbRepoStatus.textContent = 'Creating...';
+        // Create the GLB repo
+        glbRepoStatus.textContent = 'Creating GLB repo...';
         glbRepoStatus.className = 'pending';
-
         const glbResponse = await fetch('https://api.github.com/user/repos', {
             method: 'POST',
             headers: {
                 'Authorization': `token ${auth.getToken()}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: normalizedGlbName, private: false })
+            body: JSON.stringify({ name: glbRepoNameLocal, private: false })
         });
         if (!glbResponse.ok) throw new Error('Failed to create GLB repo');
+        glbRepoName = glbRepoNameLocal;
 
-        glbRepoName = normalizedGlbName;
-        showNotification(`GLB repo ${normalizedGlbName} created! Setting up config...`);
-        await saveConfig(username, normalizedGlbName);
-
-        glbRepoStatus.textContent = 'Repo Created';
-        glbRepoStatus.className = 'complete';
-
-        pagesLink.href = `https://github.com/${username}/${forkedRepoName}/settings/pages`;
-        pagesLink.textContent = 'Click here';
-
-        enableStep7();
-        checkPagesStatus(username, forkedRepoName);
+        showNotification(`Website cloned as ${websiteRepoName} and GLB repo created as ${glbRepoName}! Checking status...`);
+        checkSetupStatus(username, websiteRepoName, glbRepoNameLocal);
     } catch (error) {
+        websiteStatus.textContent = `Error: ${error.message}`;
+        websiteStatus.className = 'error';
         glbRepoStatus.textContent = `Error: ${error.message}`;
         glbRepoStatus.className = 'error';
-        showNotification(`Error: ${error.message}`, true);
+        showNotification(`Error during setup: ${error.message}`, true);
     }
+}
+
+async function checkSetupStatus(username, websiteRepoName, glbRepoName) {
+    const maxAttempts = 20;
+    let websiteAttempts = 0;
+    let glbAttempts = 0;
+
+    const interval = setInterval(async () => {
+        websiteAttempts++;
+        glbAttempts++;
+
+        try {
+            // Check website repo
+            const websiteResponse = await fetch(`https://api.github.com/repos/${username}/${websiteRepoName}`, {
+                headers: { 'Authorization': `token ${auth.getToken()}` }
+            });
+            if (websiteResponse.ok) {
+                websiteStatus.textContent = 'Website Ready';
+                websiteStatus.className = 'complete';
+            } else if (websiteAttempts >= maxAttempts) {
+                websiteStatus.textContent = 'Error: Website setup timed out';
+                websiteStatus.className = 'error';
+            }
+
+            // Check GLB repo
+            const glbResponse = await fetch(`https://api.github.com/repos/${username}/${glbRepoName}`, {
+                headers: { 'Authorization': `token ${auth.getToken()}` }
+            });
+            if (glbResponse.ok) {
+                glbRepoStatus.textContent = 'GLB Repo Ready';
+                glbRepoStatus.className = 'complete';
+            } else if (glbAttempts >= maxAttempts) {
+                glbRepoStatus.textContent = 'Error: GLB repo setup timed out';
+                glbRepoStatus.className = 'error';
+            }
+
+            // If both are complete, proceed and save config
+            if (websiteStatus.textContent === 'Website Ready' && glbRepoStatus.textContent === 'GLB Repo Ready') {
+                clearInterval(interval);
+                await saveConfig(username, glbRepoName);
+                enableStep5();
+            } else if (websiteAttempts >= maxAttempts && glbAttempts >= maxAttempts) {
+                clearInterval(interval);
+                showNotification('Setup took too long—check your GitHub repos.', true);
+            }
+        } catch (error) {
+            websiteStatus.textContent = `Error: ${error.message}`;
+            websiteStatus.className = 'error';
+            glbRepoStatus.textContent = `Error: ${error.message}`;
+            glbRepoStatus.className = 'error';
+            clearInterval(interval);
+            showNotification(`Error checking setup status: ${error.message}`, true);
+        }
+    }, 6000);
 }
 
 async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL_HERE", projectApiKey = "YOUR_SUPABASE_ANON_KEY_HERE") {
@@ -178,8 +184,8 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
     if (!response.ok) throw new Error('Failed to save config');
 }
 
-async function checkPagesStatus(username, repoName) {
-    const liveUrl = `https://${username}.github.io/`; // Root URL since repo is <username>.github.io
+async function checkPagesStatus(username) { // Removed repoName parameter since it's always username.github.io
+    const liveUrl = `https://${username}.github.io/`;
     liveSiteLink.href = liveUrl;
     portalLink.href = `${liveUrl}portal.html`;
     portalLink.textContent = 'your portal';
@@ -236,24 +242,20 @@ async function applyOAuth() {
 function enableStep5() {
     document.getElementById('step-5').style.opacity = '1';
     document.getElementById('step-5').style.pointerEvents = 'auto';
+    document.getElementById('step-6').style.opacity = '1';
+    document.getElementById('step-6').style.pointerEvents = 'auto';
+    checkPagesStatus(await getUsername()); // Start checking Pages status immediately
 }
 
-function enableStep7() {
+function enableNextSteps() {
     document.getElementById('step-7').style.opacity = '1';
     document.getElementById('step-7').style.pointerEvents = 'auto';
     document.getElementById('step-8').style.opacity = '1';
     document.getElementById('step-8').style.pointerEvents = 'auto';
-}
-
-function enableNextSteps() {
     document.getElementById('step-9').style.opacity = '1';
     document.getElementById('step-9').style.pointerEvents = 'auto';
     document.getElementById('step-10').style.opacity = '1';
     document.getElementById('step-10').style.pointerEvents = 'auto';
-    document.getElementById('step-11').style.opacity = '1';
-    document.getElementById('step-11').style.pointerEvents = 'auto';
-    document.getElementById('step-12').style.opacity = '1';
-    document.getElementById('step-12').style.pointerEvents = 'auto';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -299,17 +301,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    forkRepoBtn.addEventListener('click', () => {
-        forkRepo();
-    });
-
-    createGlbRepoBtn.addEventListener('click', async () => {
-        const repoName = glbRepoNameInput.value.trim();
-        if (!repoName) {
-            showNotification('Please enter a GLB repo name.', true);
-            return;
-        }
-        await createGlbRepo(repoName);
+    cloneWebsiteBtn.addEventListener('click', () => {
+        cloneWebsite();
     });
 
     applyOauthBtn.addEventListener('click', applyOAuth);
