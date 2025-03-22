@@ -1243,3 +1243,8 @@ footer a:hover {
 #apply-oauth-btn:hover {
     background: #e65a50;
 }
+
+#website-status.complete,
+#glb-repo-status.complete {
+    color: #44ff44; /* Green to match Pages Live */
+}

@@ -159,7 +159,7 @@ async function saveConfig(username, glbRepoName, projectUrl = "YOUR_SUPABASE_URL
         glbRepoName: glbRepoName,
         supabaseUrl: projectUrl,
         supabaseAnonKey: projectApiKey,
-        siteTitle: forkedRepoName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        siteTitle: forkedRepoName.replace('.github.io', ''), // Remove .github.io from siteTitle
         thumbnailPath: "thumbnail.jpg",
         siteRepoOwner: username,
         siteRepoName: forkedRepoName
