@@ -1248,3 +1248,8 @@ footer a:hover {
 #glb-repo-status.complete {
     color: #44ff44; /* Green to match Pages Live */
 }
+
+.centered-video {
+    display: block;
+    margin: 0 auto;
+}
